@@ -1,0 +1,440 @@
+/* =========================================
+   Lin's Happy Bowl – Admin Styles
+   ========================================= */
+
+.admin-body {
+    background: var(--color-bg-light);
+}
+
+/* ---- LOGIN ---- */
+.admin-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-dark) 0%, #2d2d50 100%);
+}
+
+.login-card {
+    background: var(--color-bg);
+    padding: 48px 40px;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    width: 100%;
+    max-width: 420px;
+    text-align: center;
+}
+
+.login-card h1 {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    margin-bottom: 8px;
+    color: var(--color-dark);
+}
+
+.login-card h2 {
+    font-size: 1rem;
+    font-weight: 400;
+    color: var(--color-text-muted);
+    margin-bottom: 32px;
+}
+
+.login-card .form-group {
+    text-align: left;
+}
+
+.login-hint {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    margin-top: 16px;
+}
+
+/* ---- ADMIN NAV ---- */
+.admin-nav {
+    background: var(--color-dark);
+    height: 64px;
+    display: flex;
+    align-items: center;
+}
+
+.admin-nav-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.admin-nav .logo-text {
+    color: #fff;
+}
+
+.admin-badge {
+    background: var(--color-primary);
+    color: #fff;
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-left: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-nav-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.admin-nav-actions .btn-outline {
+    color: rgba(255,255,255,0.8);
+    border-color: rgba(255,255,255,0.3);
+}
+
+.admin-nav-actions .btn-outline:hover {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: #fff;
+}
+
+/* ---- ADMIN CONTENT ---- */
+.admin-content {
+    padding-top: 32px;
+    padding-bottom: 60px;
+}
+
+.admin-tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--color-bg);
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    margin-bottom: 32px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-tab {
+    flex: 1;
+    padding: 12px 20px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    font-family: var(--font-body);
+    font-size: 0.95rem;
+    font-weight: 500;
+    color: var(--color-text-light);
+    border-radius: 6px;
+    transition: all var(--transition);
+}
+
+.admin-tab.active {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.admin-tab:hover:not(.active) {
+    background: var(--color-bg-warm);
+}
+
+.admin-tab-content {
+    display: none;
+}
+
+.admin-tab-content.active {
+    display: block;
+}
+
+.admin-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 28px;
+}
+
+.admin-header h2 {
+    font-family: var(--font-heading);
+    font-size: 1.6rem;
+    color: var(--color-dark);
+}
+
+/* ---- DATE NAVIGATION ---- */
+.admin-date-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 28px;
+}
+
+.admin-current-week {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--color-dark);
+}
+
+/* ---- CALENDAR ---- */
+.admin-calendar {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 12px;
+}
+
+.admin-day {
+    background: var(--color-bg);
+    border-radius: var(--radius-sm);
+    padding: 16px;
+    min-height: 200px;
+    box-shadow: var(--shadow-sm);
+}
+
+.admin-day-header {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin-bottom: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-day-date {
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: var(--color-dark);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--color-border);
+}
+
+.admin-day.today .admin-day-date {
+    color: var(--color-primary);
+    border-bottom-color: var(--color-primary);
+}
+
+.admin-meal-item {
+    background: var(--color-bg-warm);
+    border-radius: 6px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+    font-size: 0.82rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-meal-item strong {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.admin-meal-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.admin-meal-actions button {
+    width: 24px;
+    height: 24px;
+    border: none;
+    background: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    transition: background var(--transition);
+}
+
+.admin-meal-actions button:hover {
+    background: rgba(0,0,0,0.08);
+}
+
+.admin-add-meal-btn {
+    width: 100%;
+    padding: 6px;
+    border: 1px dashed var(--color-border);
+    background: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    transition: all var(--transition);
+    margin-top: 4px;
+}
+
+.admin-add-meal-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+}
+
+/* ---- MODAL ---- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal {
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    width: 100%;
+    max-width: 600px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px;
+    box-shadow: var(--shadow-lg);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+.modal-header h3 {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    color: var(--color-dark);
+}
+
+.modal-close {
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: var(--color-bg-light);
+    border-radius: 50%;
+    font-size: 1.4rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background var(--transition);
+}
+
+.modal-close:hover {
+    background: var(--color-border);
+}
+
+/* Image preview */
+.image-preview {
+    margin-top: 8px;
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+}
+
+.image-preview img {
+    width: 100%;
+    max-height: 200px;
+    object-fit: cover;
+}
+
+/* ---- PRICING FORM ---- */
+.pricing-form {
+    background: var(--color-bg);
+    padding: 32px;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+}
+
+/* ---- ORDERS LIST ---- */
+.orders-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.order-item {
+    background: var(--color-bg);
+    padding: 20px 24px;
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 16px;
+}
+
+.order-item-info h4 {
+    font-size: 1rem;
+    margin-bottom: 4px;
+    color: var(--color-dark);
+}
+
+.order-item-info p {
+    font-size: 0.88rem;
+    color: var(--color-text-light);
+    margin-bottom: 2px;
+}
+
+.order-item-meta {
+    text-align: right;
+    flex-shrink: 0;
+}
+
+.order-status {
+    display: inline-block;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.order-status.new {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.order-status.confirmed {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 1024px) {
+    .admin-calendar {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .admin-calendar {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .admin-nav-inner {
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .login-card {
+        margin: 20px;
+        padding: 32px 24px;
+    }
+
+    .modal {
+        padding: 24px;
+    }
+
+    .order-item {
+        flex-direction: column;
+    }
+
+    .order-item-meta {
+        text-align: left;
+    }
+}
+
+@media (max-width: 480px) {
+    .admin-calendar {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-tabs {
+        flex-direction: column;
+    }
+}
