@@ -14,7 +14,19 @@ export default function RootLayout({ children }) {
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
       </head>
-      <body>{children}</body>
+      <body>
+        <script dangerouslySetInnerHTML={{ __html: `
+          (function() {
+            try {
+              var theme = localStorage.getItem('lhb_theme');
+              if (theme === 'dark') {
+                document.documentElement.setAttribute('data-theme', 'dark');
+              }
+            } catch(e) {}
+          })();
+        `}} />
+        {children}
+      </body>
     </html>
   );
 }

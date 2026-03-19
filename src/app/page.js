@@ -9,8 +9,6 @@ import {
 } from '@/lib/store';
 
 export default function HomePage() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
   // Order form state
@@ -46,10 +44,11 @@ export default function HomePage() {
     }
     setAvailableDates(dates);
 
-    // Scroll handler
-    const handleScroll = () => setIsScrolled(window.scrollY > 50);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    // Restore theme from localStorage
+    const savedTheme = localStorage.getItem('lhb_theme');
+    if (savedTheme) {
+      document.documentElement.setAttribute('data-theme', savedTheme);
+    }
   }, []);
 
   const toggleDate = (dateStr) => {
@@ -193,17 +192,19 @@ export default function HomePage() {
   return (
     <>
       {/* NAVIGATION */}
-      <nav className={`navbar ${isScrolled ? 'scrolled' : ''}`}>
+      <nav className="navbar">
         <div className="container nav-container">
           <Link href="/" className="logo">
             <span className="logo-icon">🍜</span>
             <span className="logo-text">Lin&apos;s Happy Bowl</span>
           </Link>
-          <ul className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
-            <li><a href="#objednavka" className="btn btn-nav" onClick={() => setMobileMenuOpen(false)}>Objednat</a></li>
-          </ul>
-          <button className="mobile-toggle" aria-label="Menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            <span></span><span></span><span></span>
+          <button className="theme-toggle" aria-label="Přepnout tmavý režim" onClick={() => {
+            const html = document.documentElement;
+            const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('lhb_theme', newTheme);
+          }}>
+            <span className="theme-toggle-icon"></span>
           </button>
         </div>
       </nav>
@@ -378,10 +379,22 @@ export default function HomePage() {
                     <div className="payment-icon">🏦</div>
                     <div>
                       <strong>Bankovní převod</strong>
-                      <p>Platební údaje vám zašleme e-mailem po potvrzení objednávky.</p>
+                      <p>Číslo účtu: <strong>9999999964/0300</strong> (ČSOB)</p>
                     </div>
                   </div>
                 </label>
+                {payment === 'bank_transfer' && (
+                  <div className="bank-transfer-details">
+                    <div className="qr-code-wrap">
+                      <img src="/qr-payment.png" alt="QR kód pro platbu" className="qr-code-img" />
+                    </div>
+                    <div className="bank-info">
+                      <p><strong>Číslo účtu:</strong> 9999999964/0300</p>
+                      <p><strong>Banka:</strong> ČSOB</p>
+                      <p className="text-muted">Jako variabilní symbol uveďte číslo vaší objednávky.</p>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="form-actions">
                 <button type="button" className="btn btn-outline" onClick={() => prevStep(2)}>Zpět</button>
@@ -431,12 +444,6 @@ export default function HomePage() {
               <span className="logo-icon">🍜</span>
               <span className="logo-text">Lin&apos;s Happy Bowl</span>
               <p>Domácí jídla připravená s láskou, každý den čerstvě pro vás.</p>
-            </div>
-            <div className="footer-links">
-              <h4>Navigace</h4>
-              <ul>
-                <li><a href="#objednavka">Objednat</a></li>
-              </ul>
             </div>
             <div className="footer-contact">
               <h4>Kontakt</h4>
