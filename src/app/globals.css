@@ -572,7 +572,7 @@ a:hover {
     justify-content: center;
     gap: 0;
     margin-bottom: 48px;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .progress-step {
@@ -619,7 +619,9 @@ a:hover {
 }
 
 .progress-line {
-    width: 60px;
+    flex: 1;
+    max-width: 60px;
+    min-width: 20px;
     height: 2px;
     background: var(--color-border);
     margin-bottom: 28px;
@@ -1352,6 +1354,20 @@ a:hover {
 
     .progress-step span {
         display: none;
+    }
+
+    .progress-step {
+        padding: 0 8px;
+    }
+
+    .progress-circle {
+        width: 36px;
+        height: 36px;
+        font-size: 0.85rem;
+    }
+
+    .progress-line {
+        margin-bottom: 0;
     }
 
     /* Step 1 split -> stack on mobile */
