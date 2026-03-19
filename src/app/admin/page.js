@@ -312,27 +312,83 @@ function Dashboard({ onLogout }) {
           <div>
             <div className="admin-header">
               <h2>Přijaté objednávky</h2>
+              <span className="text-muted">{orders.length} objednávek celkem</span>
             </div>
             <div className="orders-list">
               {orders.length === 0 ? (
                 <p className="text-muted">Zatím nejsou žádné objednávky.</p>
               ) : (
-                orders.map(order => (
-                  <div className="order-item" key={order.id}>
-                    <div className="order-item-info">
-                      <h4>{order.orderNumber} – {order.customer.firstName} {order.customer.lastName}</h4>
-                      <p>Datum: {getDayName(order.date)} {formatDateCZ(order.date)}</p>
-                      <p>Jídla: {order.meals.map(m => `${m.name} ×${m.qty}`).join(', ')}</p>
-                      <p>Kontakt: {order.customer.email} | {order.customer.phone}</p>
-                      <p>Platba: {order.payment === 'cash' ? 'Hotově' : 'Převodem'}</p>
-                      {order.customer.note && <p><em>{order.customer.note}</em></p>}
+                orders.map(order => {
+                  const mealsByDate = {};
+                  (order.meals || []).forEach(m => {
+                    const key = m.date || 'unknown';
+                    if (!mealsByDate[key]) mealsByDate[key] = [];
+                    mealsByDate[key].push(m);
+                  });
+                  const sortedDates = Object.keys(mealsByDate).sort();
+
+                  return (
+                    <div className="order-item-detail" key={order.id}>
+                      <div className="order-detail-header">
+                        <div>
+                          <h4>{order.orderNumber}</h4>
+                          <span className="text-muted">{order.createdAt ? new Date(order.createdAt).toLocaleString('cs-CZ') : ''}</span>
+                        </div>
+                        <div className="order-detail-header-right">
+                          <span className={`order-status ${order.status}`}>{order.status === 'new' ? 'Nová' : 'Potvrzena'}</span>
+                          <span className="order-detail-total">{order.total} Kč</span>
+                        </div>
+                      </div>
+
+                      <div className="order-detail-sections">
+                        {/* Objednané položky */}
+                        <div className="order-detail-section">
+                          <h5>Objednané položky</h5>
+                          {sortedDates.map(dateStr => (
+                            <div key={dateStr} className="order-detail-date-group">
+                              <div className="order-detail-date-label">
+                                {dateStr !== 'unknown' ? `${getDayName(dateStr)} – ${formatDateCZ(dateStr)}` : 'Datum neuvedeno'}
+                              </div>
+                              {mealsByDate[dateStr].map((m, i) => (
+                                <div className="order-detail-meal-row" key={i}>
+                                  <span>{m.name} <span className="text-muted">× {m.qty}</span></span>
+                                  <span className="order-detail-meal-price">{m.price * m.qty} Kč</span>
+                                </div>
+                              ))}
+                            </div>
+                          ))}
+                        </div>
+
+                        {/* Způsob platby */}
+                        <div className="order-detail-section">
+                          <h5>Způsob platby</h5>
+                          <p>{order.payment === 'cash' ? '💵 Hotově při převzetí' : '🏦 Bankovní převod'}</p>
+                        </div>
+
+                        {/* Kontaktní informace */}
+                        <div className="order-detail-section">
+                          <h5>Kontaktní informace</h5>
+                          <div className="order-detail-contact">
+                            <p><strong>{order.customer.firstName} {order.customer.lastName}</strong></p>
+                            <p>📧 {order.customer.email}</p>
+                            <p>📞 {order.customer.phone}</p>
+                            {order.customer.street && (
+                              <p>📍 {order.customer.street}, {order.customer.city} {order.customer.zip}</p>
+                            )}
+                          </div>
+                        </div>
+
+                        {/* Poznámka */}
+                        {order.customer.note && (
+                          <div className="order-detail-section">
+                            <h5>Poznámka</h5>
+                            <p className="order-detail-note">{order.customer.note}</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="order-item-meta">
-                      <span className={`order-status ${order.status}`}>{order.status === 'new' ? 'Nová' : 'Potvrzena'}</span>
-                      <p style={{ marginTop: '8px', fontWeight: 700, color: 'var(--color-primary)' }}>{order.total} Kč</p>
-                    </div>
-                  </div>
-                ))
+                  );
+                })
               )}
             </div>
           </div>
