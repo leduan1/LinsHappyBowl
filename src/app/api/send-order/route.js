@@ -2,14 +2,40 @@ import { Resend } from 'resend';
 
 export const dynamic = 'force-dynamic';
 
+const CZ_DAYS = ['Neděle', 'Pondělí', 'Úterý', 'Středa', 'Čtvrtek', 'Pátek', 'Sobota'];
+function formatDateLabel(dateStr) {
+  const d = new Date(dateStr + 'T00:00:00');
+  const parts = dateStr.split('-');
+  return `${CZ_DAYS[d.getDay()]} – ${parseInt(parts[2])}. ${parseInt(parts[1])}. ${parts[0]}`;
+}
+
 export async function POST(request) {
   try {
     const resend = new Resend(process.env.RESEND_API_KEY);
     const order = await request.json();
 
-    const mealsHtml = order.meals
-      .map(m => `<tr><td style="padding:8px;border-bottom:1px solid #eee;">${m.name}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${m.qty}×</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">${m.price * m.qty} Kč</td></tr>`)
-      .join('');
+    // Group meals by date
+    const byDate = {};
+    for (const m of order.meals) {
+      const key = m.date || 'unknown';
+      if (!byDate[key]) byDate[key] = [];
+      byDate[key].push(m);
+    }
+    const sortedDates = Object.keys(byDate).sort();
+
+    const mealsHtml = sortedDates.map(dateStr => {
+      const dateMeals = byDate[dateStr];
+      const dateLabel = order.dateFull && sortedDates.length === 1
+        ? order.dateFull
+        : dateStr !== 'unknown' ? formatDateLabel(dateStr) : '';
+      const dateHeader = dateLabel
+        ? `<tr><td colspan="3" style="padding:12px 8px 4px;font-weight:700;color:#1a1a2e;border-bottom:2px solid #e85d26;">${dateLabel}</td></tr>`
+        : '';
+      const rows = dateMeals.map(m =>
+        `<tr><td style="padding:8px;border-bottom:1px solid #eee;">${m.name}</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:center;">${m.qty}×</td><td style="padding:8px;border-bottom:1px solid #eee;text-align:right;">${m.price * m.qty} Kč</td></tr>`
+      ).join('');
+      return dateHeader + rows;
+    }).join('');
 
     const addressHtml = order.customer.street
       ? `<p><strong>Adresa:</strong> ${order.customer.street}, ${order.customer.city} ${order.customer.zip}</p>`

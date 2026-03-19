@@ -15,9 +15,8 @@ export default function HomePage() {
 
   // Order form state
   const [currentStep, setCurrentStep] = useState(1);
-  const [orderDate, setOrderDate] = useState('');
-  const [orderDateOptions, setOrderDateOptions] = useState([]);
-  const [orderMeals, setOrderMeals] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [expandedDates, setExpandedDates] = useState({});
   const [selectedMeals, setSelectedMeals] = useState({});
   const [formData, setFormData] = useState({
     firstName: '', lastName: '', email: '', phone: '',
@@ -34,18 +33,18 @@ export default function HomePage() {
 
     const today = new Date();
 
-    // Order date options
-    const dateOpts = [];
+    // Build available dates with meals
+    const dates = [];
     for (let i = 2; i <= 14; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() + i);
       const dateStr = formatDateISO(date);
       const meals = getMealsForDate(dateStr);
       if (meals.length > 0) {
-        dateOpts.push({ value: dateStr, label: `${getDayName(dateStr)} – ${formatDateCZ(dateStr)} (${meals.length} jídel)` });
+        dates.push({ dateStr, label: `${getDayName(dateStr)} – ${formatDateCZ(dateStr)}`, meals });
       }
     }
-    setOrderDateOptions(dateOpts);
+    setAvailableDates(dates);
 
     // Scroll handler
     const handleScroll = () => setIsScrolled(window.scrollY > 50);
@@ -53,10 +52,8 @@ export default function HomePage() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleOrderDateChange = (dateStr) => {
-    setOrderDate(dateStr);
-    setSelectedMeals({});
-    setOrderMeals(dateStr ? getMealsForDate(dateStr) : []);
+  const toggleDate = (dateStr) => {
+    setExpandedDates(prev => ({ ...prev, [dateStr]: !prev[dateStr] }));
   };
 
   const toggleMeal = (mealId) => {
@@ -97,7 +94,6 @@ export default function HomePage() {
 
   const validateStep = (step) => {
     if (step === 1) {
-      if (!orderDate) { alert('Prosím vyberte datum objednávky.'); return false; }
       if (Object.keys(selectedMeals).length === 0) { alert('Prosím vyberte alespoň jedno jídlo.'); return false; }
       return true;
     }
@@ -137,19 +133,24 @@ export default function HomePage() {
     const allMeals = getMeals();
     let total = 0;
     const mealsArr = [];
+    const datesSet = new Set();
     for (const [mealId, qty] of Object.entries(selectedMeals)) {
       const meal = allMeals.find(m => m.id === mealId);
       if (meal) {
         total += meal.price * qty;
-        mealsArr.push({ name: meal.name, qty, price: meal.price });
+        datesSet.add(meal.date);
+        mealsArr.push({ name: meal.name, qty, price: meal.price, date: meal.date });
       }
     }
+
+    const sortedDates = [...datesSet].sort();
+    const datesFull = sortedDates.map(d => `${getDayName(d)} – ${formatDateCZ(d)}`).join(', ');
 
     const order = {
       id: generateId(),
       orderNumber: 'OBJ-' + Date.now().toString().slice(-6),
-      date: orderDate,
-      dateFull: `${getDayName(orderDate)} – ${formatDateCZ(orderDate)}`,
+      dates: sortedDates,
+      dateFull: datesFull,
       meals: mealsArr,
       total,
       customer: { ...formData },
@@ -234,44 +235,50 @@ export default function HomePage() {
           <form className="order-form" noValidate onSubmit={async (e) => { e.preventDefault(); await submitOrder(); }}>
             {/* STEP 1 */}
             <div className={`form-step ${currentStep === 1 ? 'active' : ''}`}>
-              <h3>Vyberte den a jídlo</h3>
-              <div className="form-group">
-                <label htmlFor="orderDate">Datum objednávky *</label>
-                <select id="orderDate" value={orderDate} onChange={(e) => handleOrderDateChange(e.target.value)}>
-                  <option value="">-- Vyberte den --</option>
-                  {orderDateOptions.map(opt => (
-                    <option key={opt.value} value={opt.value}>{opt.label}</option>
-                  ))}
-                </select>
-              </div>
+              <h3>Vyberte dny a jídla</h3>
+              <p className="text-muted">Můžete vybírat jídla z více dnů najednou</p>
 
-              <div className="order-meals-grid">
-                {!orderDate ? (
-                  <p className="text-muted">Nejprve vyberte datum pro zobrazení dostupných jídel.</p>
-                ) : orderMeals.length === 0 ? (
-                  <p className="text-muted">Pro tento den nejsou k dispozici žádná jídla.</p>
-                ) : (
-                  orderMeals.map(meal => (
-                    <div
-                      key={meal.id}
-                      className={`order-meal-card ${selectedMeals[meal.id] ? 'selected' : ''}`}
-                      onClick={() => toggleMeal(meal.id)}
-                    >
-                      <div className="order-meal-check"></div>
-                      {meal.image && <img className="order-meal-img" src={meal.image} alt={meal.name} />}
-                      <div className="order-meal-info">
-                        <h4>{meal.name}</h4>
-                        <p>{meal.weight}g {meal.allergens ? `| Alergeny: ${meal.allergens}` : ''}</p>
-                      </div>
-                      <span className="order-meal-price">{meal.price} Kč</span>
-                      <div className="order-meal-qty" onClick={(e) => e.stopPropagation()}>
-                        <button type="button" onClick={() => changeMealQty(meal.id, -1)}>−</button>
-                        <span>{selectedMeals[meal.id] || 0}</span>
-                        <button type="button" onClick={() => changeMealQty(meal.id, 1)}>+</button>
-                      </div>
+              <div className="order-dates-list">
+                {availableDates.map(({ dateStr, label, meals }) => {
+                  const mealsSelectedForDate = meals.filter(m => selectedMeals[m.id]);
+                  const isExpanded = expandedDates[dateStr];
+                  return (
+                    <div key={dateStr} className={`order-date-group ${mealsSelectedForDate.length > 0 ? 'has-selection' : ''}`}>
+                      <button type="button" className="order-date-header" onClick={() => toggleDate(dateStr)}>
+                        <div className="order-date-info">
+                          <span className="order-date-label">{label}</span>
+                          <span className="order-date-count">{meals.length} jídel{mealsSelectedForDate.length > 0 ? ` · vybráno: ${mealsSelectedForDate.length}` : ''}</span>
+                        </div>
+                        <span className={`order-date-arrow ${isExpanded ? 'expanded' : ''}`}>&#9662;</span>
+                      </button>
+                      {isExpanded && (
+                        <div className="order-meals-cards">
+                          {meals.map(meal => (
+                            <div
+                              key={meal.id}
+                              className={`order-meal-card ${selectedMeals[meal.id] ? 'selected' : ''}`}
+                              onClick={() => toggleMeal(meal.id)}
+                            >
+                              {meal.image && <img className="order-meal-img" src={meal.image} alt={meal.name} />}
+                              <div className="order-meal-body">
+                                <h4 className="order-meal-name">{meal.name}</h4>
+                                <p className="order-meal-meta">{meal.weight}g {meal.allergens ? `| Alergeny: ${meal.allergens}` : ''}</p>
+                                <div className="order-meal-footer">
+                                  <span className="order-meal-price">{meal.price} Kč</span>
+                                  <div className="order-meal-qty" onClick={(e) => e.stopPropagation()}>
+                                    <button type="button" onClick={() => changeMealQty(meal.id, -1)}>−</button>
+                                    <span>{selectedMeals[meal.id] || 0}</span>
+                                    <button type="button" onClick={() => changeMealQty(meal.id, 1)}>+</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                  ))
-                )}
+                  );
+                })}
               </div>
 
               <div className="live-price">
@@ -366,7 +373,6 @@ export default function HomePage() {
             <div className={`form-step ${currentStep === 4 ? 'active' : ''}`}>
               <h3>Shrnutí objednávky</h3>
               <OrderSummary
-                orderDate={orderDate}
                 selectedMeals={selectedMeals}
                 formData={formData}
                 payment={payment}
@@ -429,32 +435,36 @@ export default function HomePage() {
   );
 }
 
-function OrderSummary({ orderDate, selectedMeals, formData, payment }) {
+function OrderSummary({ selectedMeals, formData, payment }) {
   const allMeals = getMeals();
   let total = 0;
-  const mealRows = [];
+  const byDate = {};
 
   for (const [mealId, qty] of Object.entries(selectedMeals)) {
     const meal = allMeals.find(m => m.id === mealId);
     if (meal) {
       const subtotal = meal.price * qty;
       total += subtotal;
-      mealRows.push({ name: meal.name, qty, subtotal });
+      if (!byDate[meal.date]) byDate[meal.date] = [];
+      byDate[meal.date].push({ name: meal.name, qty, subtotal });
     }
   }
+
+  const sortedDates = Object.keys(byDate).sort();
 
   return (
     <div className="order-summary">
       <div className="summary-section">
-        <h4>Datum</h4>
-        <p>{orderDate ? `${getDayName(orderDate)} – ${formatDateCZ(orderDate)}` : ''}</p>
-      </div>
-      <div className="summary-section">
         <h4>Vybraná jídla</h4>
-        {mealRows.map((r, i) => (
-          <div className="summary-row" key={i}>
-            <span>{r.name} × {r.qty}</span>
-            <span>{r.subtotal} Kč</span>
+        {sortedDates.map(dateStr => (
+          <div key={dateStr} style={{ marginBottom: '12px' }}>
+            <strong>{getDayName(dateStr)} – {formatDateCZ(dateStr)}</strong>
+            {byDate[dateStr].map((r, i) => (
+              <div className="summary-row" key={i}>
+                <span>{r.name} × {r.qty}</span>
+                <span>{r.subtotal} Kč</span>
+              </div>
+            ))}
           </div>
         ))}
       </div>

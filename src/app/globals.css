@@ -712,27 +712,92 @@ a:hover {
 }
 
 /* Order meal selection */
-.order-meals-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+/* Multi-date order groups */
+.order-dates-list {
+    display: flex;
+    flex-direction: column;
     gap: 12px;
     margin-top: 12px;
 }
 
-.order-meal-card {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    padding: 16px;
+.order-date-group {
     border: 2px solid var(--color-border);
     border-radius: var(--radius-sm);
+    overflow: hidden;
+    transition: border-color var(--transition);
+}
+
+.order-date-group.has-selection {
+    border-color: var(--color-primary);
+}
+
+.order-date-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 16px 20px;
+    border: none;
+    background: var(--color-bg-light);
+    cursor: pointer;
+    text-align: left;
+    font-family: var(--font-body);
+    transition: background var(--transition);
+}
+
+.order-date-header:hover {
+    background: var(--color-bg-warm);
+}
+
+.order-date-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.order-date-label {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--color-dark);
+}
+
+.order-date-count {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+}
+
+.order-date-arrow {
+    font-size: 1.2rem;
+    color: var(--color-text-muted);
+    transition: transform var(--transition);
+}
+
+.order-date-arrow.expanded {
+    transform: rotate(180deg);
+}
+
+/* Meal cards - large card layout */
+.order-meals-cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 16px;
+    padding: 16px;
+}
+
+.order-meal-card {
+    display: flex;
+    flex-direction: column;
+    border: 2px solid var(--color-border);
+    border-radius: 12px;
     cursor: pointer;
     transition: all var(--transition);
     background: var(--color-bg);
+    overflow: hidden;
 }
 
 .order-meal-card:hover {
     border-color: var(--color-primary-light);
+    box-shadow: var(--shadow-md);
 }
 
 .order-meal-card.selected {
@@ -740,62 +805,44 @@ a:hover {
     background: var(--color-bg-warm);
 }
 
-.order-meal-card input[type="checkbox"] {
-    display: none;
-}
-
-.order-meal-check {
-    width: 24px;
-    height: 24px;
-    border: 2px solid var(--color-border);
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    transition: all var(--transition);
-}
-
-.order-meal-card.selected .order-meal-check {
-    background: var(--color-primary);
-    border-color: var(--color-primary);
-    color: #fff;
-}
-
-.order-meal-card.selected .order-meal-check::after {
-    content: '✓';
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #fff;
-}
-
 .order-meal-img {
-    width: 60px;
-    height: 60px;
-    border-radius: 8px;
+    width: 100%;
+    height: 180px;
     object-fit: cover;
-    flex-shrink: 0;
     background: var(--color-bg-warm);
 }
 
-.order-meal-info {
+.order-meal-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
     flex: 1;
 }
 
-.order-meal-info h4 {
-    font-size: 0.95rem;
-    margin-bottom: 2px;
+.order-meal-name {
+    font-size: 1.15rem;
+    font-weight: 600;
     color: var(--color-dark);
+    margin-bottom: 6px;
+    line-height: 1.3;
 }
 
-.order-meal-info p {
+.order-meal-meta {
     font-size: 0.82rem;
     color: var(--color-text-muted);
+    margin-bottom: 12px;
+}
+
+.order-meal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
 }
 
 .order-meal-price {
     font-weight: 700;
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     color: var(--color-primary);
     white-space: nowrap;
 }
@@ -804,17 +851,16 @@ a:hover {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-left: 8px;
 }
 
 .order-meal-qty button {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border: 1px solid var(--color-border);
     background: var(--color-bg);
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -830,8 +876,9 @@ a:hover {
 
 .order-meal-qty span {
     font-weight: 600;
-    min-width: 20px;
+    min-width: 24px;
     text-align: center;
+    font-size: 1.05rem;
 }
 
 /* Live price */
@@ -1128,30 +1175,16 @@ a:hover {
         font-size: 2rem;
     }
 
-    .order-meal-card {
-        flex-wrap: wrap;
+    .order-meals-cards {
+        grid-template-columns: 1fr;
     }
 
     .progress-step span {
         display: none;
     }
-
-    .menu-date-picker {
-        gap: 8px;
-    }
-
-    .date-btn {
-        min-width: auto;
-        padding: 10px 14px;
-    }
 }
 
 @media (max-width: 480px) {
-    .hero-cta {
-        flex-direction: column;
-        align-items: center;
-    }
-
     .form-actions {
         flex-direction: column;
     }
@@ -1160,7 +1193,7 @@ a:hover {
         width: 100%;
     }
 
-    .order-meal-card {
-        padding: 12px;
+    .order-meal-img {
+        height: 140px;
     }
 }
