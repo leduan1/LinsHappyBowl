@@ -5,18 +5,13 @@ import Link from 'next/link';
 import {
   getMeals, getMealsForDate, getOrders, saveOrders,
   initDemoData, generateId, formatDateISO, formatDateCZ,
-  getDayName, getDayNameShort,
+  getDayName,
 } from '@/lib/store';
 
 export default function HomePage() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
-
-  // Menu section state
-  const [menuDates, setMenuDates] = useState([]);
-  const [activeMenuDate, setActiveMenuDate] = useState('');
-  const [menuMeals, setMenuMeals] = useState([]);
 
   // Order form state
   const [currentStep, setCurrentStep] = useState(1);
@@ -37,19 +32,7 @@ export default function HomePage() {
     initDemoData();
     setMounted(true);
 
-    // Setup dates for menu picker
     const today = new Date();
-    const dates = [];
-    for (let offset = 2; offset <= 6; offset++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() + offset);
-      dates.push(formatDateISO(date));
-    }
-    setMenuDates(dates);
-    if (dates.length > 0) {
-      setActiveMenuDate(dates[0]);
-      setMenuMeals(getMealsForDate(dates[0]));
-    }
 
     // Order date options
     const dateOpts = [];
@@ -69,11 +52,6 @@ export default function HomePage() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const selectMenuDate = (dateStr) => {
-    setActiveMenuDate(dateStr);
-    setMenuMeals(getMealsForDate(dateStr));
-  };
 
   const handleOrderDateChange = (dateStr) => {
     setOrderDate(dateStr);
@@ -221,9 +199,6 @@ export default function HomePage() {
             <span className="logo-text">Lin&apos;s Happy Bowl</span>
           </Link>
           <ul className={`nav-links ${mobileMenuOpen ? 'open' : ''}`}>
-            <li><a href="#jak-to-funguje" onClick={() => setMobileMenuOpen(false)}>Jak to funguje</a></li>
-            <li><a href="#vyhody" onClick={() => setMobileMenuOpen(false)}>Proč my</a></li>
-            <li><a href="#menu" onClick={() => setMobileMenuOpen(false)}>Denní menu</a></li>
             <li><a href="#objednavka" className="btn btn-nav" onClick={() => setMobileMenuOpen(false)}>Objednat</a></li>
           </ul>
           <button className="mobile-toggle" aria-label="Menu" onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
@@ -231,119 +206,6 @@ export default function HomePage() {
           </button>
         </div>
       </nav>
-
-      {/* HERO */}
-      <section className="hero" id="hero">
-        <div className="hero-video-wrap">
-          <video autoPlay muted loop playsInline className="hero-video">
-            <source src="https://cdn.coverr.co/videos/coverr-woman-cooking-in-kitchen-1584/1080p.mp4" type="video/mp4" />
-          </video>
-          <div className="hero-overlay"></div>
-        </div>
-        <div className="container hero-content">
-          <h1 className="hero-title">Domácí jídla připravená <br /><span className="highlight">s láskou, pro váš den</span></h1>
-          <p className="hero-subtitle">Každý den vybírejte ze 4 čerstvě uvařených jídel. Objednejte s předstihem 2 dnů a vychutnejte si domácí kuchyni bez vaření.</p>
-          <div className="hero-cta">
-            <a href="#objednavka" className="btn btn-primary btn-lg">Objednat jídlo</a>
-            <a href="#jak-to-funguje" className="btn btn-outline btn-lg">Jak to funguje?</a>
-          </div>
-        </div>
-      </section>
-
-      {/* JAK TO FUNGUJE */}
-      <section className="section section-steps" id="jak-to-funguje">
-        <div className="container">
-          <h2 className="section-title">Jak to funguje?</h2>
-          <p className="section-subtitle">Objednání jídla je snadné – stačí 3 jednoduché kroky</p>
-          <div className="steps-grid">
-            {[
-              { num: 1, icon: '📋', title: 'Vyberte si jídlo', desc: 'Prohlédněte si denní nabídku a vyberte z až 4 variant jídel na každý den.' },
-              { num: 2, icon: '📝', title: 'Vyplňte objednávku', desc: 'Zadejte své údaje, zvolte počet porcí a způsob platby.' },
-              { num: 3, icon: '🍽️', title: 'Vychutnejte si', desc: 'Převezměte si čerstvě uvařené jídlo a užijte si domácí chuť.' },
-            ].map(step => (
-              <div className="step-card" key={step.num}>
-                <div className="step-number">{step.num}</div>
-                <div className="step-icon">{step.icon}</div>
-                <h3>{step.title}</h3>
-                <p>{step.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* VÝHODY */}
-      <section className="section section-benefits" id="vyhody">
-        <div className="container">
-          <h2 className="section-title">Proč si vybrat Lin&apos;s Happy Bowl?</h2>
-          <p className="section-subtitle">Vaříme s vášní a pečlivě vybíráme ty nejlepší ingredience</p>
-          <div className="benefits-grid">
-            {[
-              { icon: '🥗', title: 'Čerstvé ingredience', desc: 'Používáme pouze čerstvé a kvalitní suroviny od lokálních dodavatelů.' },
-              { icon: '👩‍🍳', title: 'Domácí příprava', desc: 'Každé jídlo je připravené ručně s láskou, jako byste vařili doma.' },
-              { icon: '⚖️', title: 'Vyvážená strava', desc: 'Dbáme na vyváženost jídel – správný poměr bílkovin, sacharidů a tuků.' },
-              { icon: '📦', title: 'Pohodlné vyzvednutí', desc: 'Stačí si vyzvednout hotové jídlo v dohodnutém čase. Žádné čekání.' },
-              { icon: '⚠️', title: 'Alergeny pod kontrolou', desc: 'U každého jídla uvádíme kompletní seznam alergenů pro vaši bezpečnost.' },
-              { icon: '💰', title: 'Férové ceny', desc: 'Kvalitní domácí jídlo za rozumnou cenu. Žádné skryté poplatky.' },
-            ].map((b, i) => (
-              <div className="benefit-card" key={i}>
-                <div className="benefit-icon">{b.icon}</div>
-                <h3>{b.title}</h3>
-                <p>{b.desc}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* DENNÍ MENU */}
-      <section className="section section-menu" id="menu">
-        <div className="container">
-          <h2 className="section-title">Denní nabídka</h2>
-          <p className="section-subtitle">Vyberte den a prohlédněte si dostupná jídla</p>
-
-          <div className="menu-date-picker">
-            {menuDates.map(dateStr => (
-              <button
-                key={dateStr}
-                className={`date-btn ${activeMenuDate === dateStr ? 'active' : ''}`}
-                onClick={() => selectMenuDate(dateStr)}
-              >
-                <span className="date-day">{getDayName(dateStr)}</span>
-                <span className="date-full">{formatDateCZ(dateStr)}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="menu-grid">
-            {menuMeals.length === 0 ? (
-              <div className="menu-empty">
-                <p>Pro tento den zatím není připravená nabídka. Zkuste jiný den.</p>
-              </div>
-            ) : (
-              menuMeals.map(meal => (
-                <div className="menu-card" key={meal.id}>
-                  {meal.image ? (
-                    <img className="menu-card-image" src={meal.image} alt={meal.name} loading="lazy" />
-                  ) : (
-                    <div className="menu-card-image-placeholder">🍽️</div>
-                  )}
-                  <div className="menu-card-body">
-                    <span className="menu-card-slot">Jídlo {meal.slot}</span>
-                    <h3>{meal.name}</h3>
-                    {meal.description && <p className="menu-card-desc">{meal.description}</p>}
-                    <div className="menu-card-meta">
-                      <span className="menu-card-weight">{meal.weight}g</span>
-                      {meal.allergens && <span className="menu-card-allergens">Alergeny: {meal.allergens}</span>}
-                      <span className="menu-card-price">{meal.price} Kč</span>
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </section>
 
       {/* OBJEDNÁVKOVÝ FORMULÁŘ */}
       <section className="section section-order" id="objednavka">
@@ -547,9 +409,6 @@ export default function HomePage() {
             <div className="footer-links">
               <h4>Navigace</h4>
               <ul>
-                <li><a href="#jak-to-funguje">Jak to funguje</a></li>
-                <li><a href="#vyhody">Proč my</a></li>
-                <li><a href="#menu">Denní menu</a></li>
                 <li><a href="#objednavka">Objednat</a></li>
               </ul>
             </div>
