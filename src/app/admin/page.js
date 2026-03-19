@@ -6,6 +6,7 @@ import {
   getMeals, saveMeals, getOrders, getPricing, savePricingData,
   initDemoData, generateId, formatDateISO, formatDateCZ,
   getDayName, getDayNameShort, getMealsForDate,
+  getImageLibrary, saveImageToLibrary, removeImageFromLibrary,
 } from '@/lib/store';
 
 export default function AdminPage() {
@@ -96,6 +97,8 @@ function Dashboard({ onLogout }) {
     weight: '', price: '', allergens: '', image: '',
   });
   const [imagePreview, setImagePreview] = useState('');
+  const [showGallery, setShowGallery] = useState(false);
+  const [galleryRefreshKey, setGalleryRefreshKey] = useState(0);
   const fileInputRef = useRef(null);
 
   // Pricing state
@@ -185,6 +188,9 @@ function Dashboard({ onLogout }) {
     }
 
     saveMeals(meals);
+    if (imageUrl) {
+      saveImageToLibrary(imageUrl, mealForm.name);
+    }
     closeMealModal();
     refresh();
   };
@@ -443,16 +449,52 @@ function Dashboard({ onLogout }) {
                 <small className="form-help">1-Lepek, 2-Korýši, 3-Vejce, 4-Ryby, 5-Arašídy, 6-Sója, 7-Mléko, 8-Skořápkové plody, 9-Celer, 10-Hořčice, 11-Sezam, 12-Oxid siřičitý, 13-Vlčí bob, 14-Měkkýši</small>
               </div>
               <div className="form-group">
-                <label htmlFor="mealImage">URL obrázku</label>
-                <input type="url" id="mealImage" placeholder="https://example.com/image.jpg" value={mealForm.image} onChange={(e) => { setMealForm(f => ({ ...f, image: e.target.value })); setImagePreview(e.target.value); }} />
-                <small className="form-help">Zadejte URL obrázku jídla nebo nahrajte obrázek</small>
-              </div>
-              <div className="form-group">
-                <label htmlFor="mealImageFile">Nebo nahrajte obrázek</label>
-                <input type="file" id="mealImageFile" accept="image/*" ref={fileInputRef} onChange={handleFileChange} />
+                <label>Fotka jídla</label>
+                <div className="image-source-tabs">
+                  <button type="button" className={`image-source-tab ${!showGallery ? 'active' : ''}`} onClick={() => setShowGallery(false)}>Nahrát novou</button>
+                  <button type="button" className={`image-source-tab ${showGallery ? 'active' : ''}`} onClick={() => { setShowGallery(true); setGalleryRefreshKey(k => k + 1); }}>Vybrat z galerie ({getImageLibrary().length})</button>
+                </div>
+
+                {!showGallery ? (
+                  <div className="image-upload-area">
+                    <div className="form-group" style={{ marginBottom: 8 }}>
+                      <input type="file" id="mealImageFile" accept="image/*" ref={fileInputRef} onChange={handleFileChange} />
+                    </div>
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <input type="url" id="mealImage" placeholder="nebo vložte URL obrázku..." value={mealForm.image} onChange={(e) => { setMealForm(f => ({ ...f, image: e.target.value })); setImagePreview(e.target.value); }} />
+                    </div>
+                  </div>
+                ) : (
+                  <div className="image-gallery" key={galleryRefreshKey}>
+                    {getImageLibrary().length === 0 ? (
+                      <p className="text-muted" style={{ padding: '16px 0', fontSize: '0.88rem' }}>Galerie je prázdná. Nahrajte první obrázek přes záložku &quot;Nahrát novou&quot;.</p>
+                    ) : (
+                      <div className="image-gallery-grid">
+                        {getImageLibrary().map(img => (
+                          <div
+                            key={img.id}
+                            className={`image-gallery-item ${imagePreview === img.url ? 'selected' : ''}`}
+                            onClick={() => { setMealForm(f => ({ ...f, image: img.url })); setImagePreview(img.url); }}
+                          >
+                            <img src={img.url} alt={img.label || 'Fotka jídla'} />
+                            {img.label && <span className="image-gallery-label">{img.label}</span>}
+                            <button
+                              type="button"
+                              className="image-gallery-remove"
+                              title="Odebrat z galerie"
+                              onClick={(e) => { e.stopPropagation(); removeImageFromLibrary(img.id); setGalleryRefreshKey(k => k + 1); }}
+                            >&times;</button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {imagePreview && (
-                  <div className="image-preview" style={{ display: 'block' }}>
+                  <div className="image-preview" style={{ display: 'block', marginTop: 12 }}>
                     <img src={imagePreview} alt="Náhled" />
+                    <button type="button" className="image-preview-clear" onClick={() => { setImagePreview(''); setMealForm(f => ({ ...f, image: '' })); if (fileInputRef.current) fileInputRef.current.value = ''; }}>Odstranit fotku</button>
                   </div>
                 )}
               </div>

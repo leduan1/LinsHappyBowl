@@ -6,6 +6,7 @@ const STORAGE_KEYS = {
   meals: 'lhb_meals',
   orders: 'lhb_orders',
   pricing: 'lhb_pricing',
+  imageLibrary: 'lhb_image_library',
 };
 
 export function getMeals() {
@@ -36,6 +37,26 @@ export function getPricing() {
 
 export function savePricingData(pricing) {
   localStorage.setItem(STORAGE_KEYS.pricing, JSON.stringify(pricing));
+}
+
+export function getImageLibrary() {
+  if (typeof window === 'undefined') return [];
+  const data = localStorage.getItem(STORAGE_KEYS.imageLibrary);
+  return data ? JSON.parse(data) : [];
+}
+
+export function saveImageToLibrary(imageUrl, label) {
+  if (!imageUrl) return;
+  const library = getImageLibrary();
+  const exists = library.some(img => img.url === imageUrl);
+  if (exists) return;
+  library.unshift({ id: 'img_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 5), url: imageUrl, label: label || '', addedAt: new Date().toISOString() });
+  localStorage.setItem(STORAGE_KEYS.imageLibrary, JSON.stringify(library));
+}
+
+export function removeImageFromLibrary(imageId) {
+  const library = getImageLibrary().filter(img => img.id !== imageId);
+  localStorage.setItem(STORAGE_KEYS.imageLibrary, JSON.stringify(library));
 }
 
 export function generateId() {
