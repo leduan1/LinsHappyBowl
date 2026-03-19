@@ -20,8 +20,13 @@ export default function AdminPage() {
     }
   }, []);
 
-  const handleLogin = (user, pass) => {
-    if (user === 'admin' && pass === 'admin123') {
+  const handleLogin = (email, pass) => {
+    const accounts = [
+      { email: 'jirka.leanh@gmail.com', password: 'Jirka607' },
+      { email: 'dinhthuylinhsm@gmail.com', password: 'LinUmiVarit2026!' },
+    ];
+    const match = accounts.find(a => a.email === email && a.password === pass);
+    if (match) {
       sessionStorage.setItem('lhb_admin', 'true');
       setIsLoggedIn(true);
     } else {
@@ -63,15 +68,15 @@ function LoginScreen({ onLogin }) {
         <h2>Administrace</h2>
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label htmlFor="adminUser">Uživatelské jméno</label>
-            <input type="text" id="adminUser" required placeholder="admin" value={user} onChange={(e) => setUser(e.target.value)} />
+            <label htmlFor="adminUser">E-mail</label>
+            <input type="email" id="adminUser" required placeholder="vas@email.cz" value={user} onChange={(e) => setUser(e.target.value)} />
           </div>
           <div className="form-group">
             <label htmlFor="adminPass">Heslo</label>
             <input type="password" id="adminPass" required placeholder="••••••" value={pass} onChange={(e) => setPass(e.target.value)} />
           </div>
           <button type="submit" className="btn btn-primary btn-block">Přihlásit se</button>
-          <p className="login-hint">Výchozí: admin / admin123</p>
+          <p className="login-hint">Přihlaste se pomocí e-mailu a hesla</p>
         </form>
       </div>
     </div>
