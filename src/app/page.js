@@ -238,57 +238,77 @@ export default function HomePage() {
               <h3>Vyberte dny a jídla</h3>
               <p className="text-muted">Můžete vybírat jídla z více dnů najednou</p>
 
-              <div className="order-dates-list">
-                {availableDates.map(({ dateStr, label, meals }) => {
-                  const mealsSelectedForDate = meals.filter(m => selectedMeals[m.id]);
-                  const isExpanded = expandedDates[dateStr];
-                  return (
-                    <div key={dateStr} className={`order-date-group ${mealsSelectedForDate.length > 0 ? 'has-selection' : ''}`}>
-                      <button type="button" className="order-date-header" onClick={() => toggleDate(dateStr)}>
-                        <div className="order-date-info">
-                          <span className="order-date-label">{label}</span>
-                          <span className="order-date-count">{meals.length} jídel{mealsSelectedForDate.length > 0 ? ` · vybráno: ${mealsSelectedForDate.length}` : ''}</span>
-                        </div>
-                        <span className={`order-date-arrow ${isExpanded ? 'expanded' : ''}`}>&#9662;</span>
-                      </button>
-                      {isExpanded && (
-                        <div className="order-meals-cards">
-                          {meals.map(meal => (
-                            <div
-                              key={meal.id}
-                              className={`order-meal-card ${selectedMeals[meal.id] ? 'selected' : ''}`}
-                              onClick={() => toggleMeal(meal.id)}
-                            >
-                              {meal.image && <img className="order-meal-img" src={meal.image} alt={meal.name} />}
-                              <div className="order-meal-body">
-                                <h4 className="order-meal-name">{meal.name}</h4>
-                                <p className="order-meal-meta">{meal.weight}g {meal.allergens ? `| Alergeny: ${meal.allergens}` : ''}</p>
-                                <div className="order-meal-footer">
-                                  <span className="order-meal-price">{meal.price} Kč</span>
-                                  <div className="order-meal-qty" onClick={(e) => e.stopPropagation()}>
-                                    <button type="button" onClick={() => changeMealQty(meal.id, -1)}>−</button>
-                                    <span>{selectedMeals[meal.id] || 0}</span>
-                                    <button type="button" onClick={() => changeMealQty(meal.id, 1)}>+</button>
+              <div className="step1-split">
+                <div className="step1-left">
+                  <div className="order-dates-list">
+                    {availableDates.map(({ dateStr, label, meals }) => {
+                      const mealsSelectedForDate = meals.filter(m => selectedMeals[m.id]);
+                      const isExpanded = expandedDates[dateStr];
+                      return (
+                        <div key={dateStr} className={`order-date-group ${mealsSelectedForDate.length > 0 ? 'has-selection' : ''}`}>
+                          <button type="button" className="order-date-header" onClick={() => toggleDate(dateStr)}>
+                            <div className="order-date-info">
+                              <span className="order-date-label">{label}</span>
+                              <span className="order-date-count">{meals.length} jídel{mealsSelectedForDate.length > 0 ? ` · vybráno: ${mealsSelectedForDate.length}` : ''}</span>
+                            </div>
+                            <span className={`order-date-arrow ${isExpanded ? 'expanded' : ''}`}>&#9662;</span>
+                          </button>
+                          {isExpanded && (
+                            <div className="order-meals-cards">
+                              {meals.map(meal => (
+                                <div
+                                  key={meal.id}
+                                  className={`order-meal-card ${selectedMeals[meal.id] ? 'selected' : ''}`}
+                                  onClick={() => toggleMeal(meal.id)}
+                                >
+                                  {meal.image && <img className="order-meal-img" src={meal.image} alt={meal.name} />}
+                                  <div className="order-meal-body">
+                                    <h4 className="order-meal-name">{meal.name}</h4>
+                                    <p className="order-meal-meta">{meal.weight}g {meal.allergens ? `| Alergeny: ${meal.allergens}` : ''}</p>
+                                    <div className="order-meal-footer">
+                                      <span className="order-meal-price">{meal.price} Kč</span>
+                                      <div className="order-meal-qty" onClick={(e) => e.stopPropagation()}>
+                                        <button type="button" onClick={() => changeMealQty(meal.id, -1)}>−</button>
+                                        <span>{selectedMeals[meal.id] || 0}</span>
+                                        <button type="button" onClick={() => changeMealQty(meal.id, 1)}>+</button>
+                                      </div>
+                                    </div>
                                   </div>
                                 </div>
-                              </div>
+                              ))}
                             </div>
-                          ))}
+                          )}
                         </div>
-                      )}
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="step1-right">
+                  <div className="step1-sidebar">
+                    <h4 className="step1-sidebar-title">Vybraná jídla</h4>
+                    <SelectedMealsSidebar selectedMeals={selectedMeals} changeMealQty={changeMealQty} />
+                    <div className="live-price">
+                      <span>Celkem:</span>
+                      <strong>{totalPrice()} Kč</strong>
                     </div>
-                  );
-                })}
+                    <button type="button" className="btn btn-primary btn-block" onClick={() => nextStep(2)} disabled={Object.keys(selectedMeals).length === 0}>Pokračovat</button>
+                  </div>
+                </div>
               </div>
 
-              <div className="live-price">
-                <span>Celková cena:</span>
-                <strong>{totalPrice()} Kč</strong>
-              </div>
-
-              <div className="form-actions">
-                <button type="button" className="btn btn-primary" onClick={() => nextStep(2)}>Pokračovat</button>
-              </div>
+              {/* Mobile fixed bottom bar */}
+              {Object.keys(selectedMeals).length > 0 && (
+                <div className="mobile-fixed-bar">
+                  <div className="mobile-fixed-bar-inner">
+                    <div className="mobile-fixed-bar-info">
+                      <span className="mobile-fixed-bar-count">{Object.values(selectedMeals).reduce((a, b) => a + b, 0)} jídel</span>
+                      <strong className="mobile-fixed-bar-price">{totalPrice()} Kč</strong>
+                    </div>
+                    <button type="button" className="btn btn-primary" onClick={() => nextStep(2)}>Pokračovat</button>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* STEP 2 */}
@@ -432,6 +452,48 @@ export default function HomePage() {
         </div>
       </footer>
     </>
+  );
+}
+
+function SelectedMealsSidebar({ selectedMeals, changeMealQty }) {
+  const allMeals = getMeals();
+  const byDate = {};
+
+  for (const [mealId, qty] of Object.entries(selectedMeals)) {
+    const meal = allMeals.find(m => m.id === mealId);
+    if (meal) {
+      if (!byDate[meal.date]) byDate[meal.date] = [];
+      byDate[meal.date].push({ ...meal, qty });
+    }
+  }
+
+  const sortedDates = Object.keys(byDate).sort();
+
+  if (sortedDates.length === 0) {
+    return <p className="sidebar-empty">Zatím nemáte vybraná žádná jídla.</p>;
+  }
+
+  return (
+    <div className="sidebar-meals-list">
+      {sortedDates.map(dateStr => (
+        <div key={dateStr} className="sidebar-date-group">
+          <div className="sidebar-date-label">{getDayName(dateStr)} – {formatDateCZ(dateStr)}</div>
+          {byDate[dateStr].map(meal => (
+            <div key={meal.id} className="sidebar-meal-row">
+              <div className="sidebar-meal-info">
+                <span className="sidebar-meal-name">{meal.name}</span>
+                <span className="sidebar-meal-price">{meal.price * meal.qty} Kč</span>
+              </div>
+              <div className="sidebar-meal-qty">
+                <button type="button" onClick={() => changeMealQty(meal.id, -1)}>−</button>
+                <span>{meal.qty}</span>
+                <button type="button" onClick={() => changeMealQty(meal.id, 1)}>+</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      ))}
+    </div>
   );
 }
 

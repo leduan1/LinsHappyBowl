@@ -626,9 +626,169 @@ a:hover {
 }
 
 .order-form {
+    margin: 0 auto;
+}
+
+.order-form .form-step {
     max-width: 700px;
     margin: 0 auto;
 }
+
+/* Step 1 uses full width for split layout */
+.order-form .form-step:has(.step1-split) {
+    max-width: none;
+}
+
+/* 50/50 split layout for step 1 on desktop */
+.step1-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+.step1-left {
+    min-width: 0;
+}
+
+.step1-right {
+    position: sticky;
+    top: 96px;
+}
+
+.step1-sidebar {
+    background: var(--color-bg-light);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius);
+    padding: 24px;
+}
+
+.step1-sidebar-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    color: var(--color-dark);
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.step1-sidebar .live-price {
+    margin-top: 16px;
+    margin-bottom: 16px;
+}
+
+.step1-sidebar .btn-block {
+    margin-top: 0;
+}
+
+.sidebar-empty {
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 24px 0;
+}
+
+.sidebar-meals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.sidebar-date-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    animation: fadeIn 0.3s ease;
+}
+
+.sidebar-date-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: var(--color-text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.sidebar-meal-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--color-border);
+    animation: popIn 0.3s ease;
+}
+
+.sidebar-meal-row:last-child {
+    border-bottom: none;
+}
+
+.sidebar-meal-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    flex: 1;
+}
+
+.sidebar-meal-name {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-dark);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.sidebar-meal-price {
+    font-size: 0.85rem;
+    color: var(--color-primary);
+    font-weight: 600;
+}
+
+.sidebar-meal-qty {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.sidebar-meal-qty button {
+    width: 26px;
+    height: 26px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all var(--transition);
+}
+
+.sidebar-meal-qty button:hover {
+    background: var(--color-primary);
+    color: #fff;
+    border-color: var(--color-primary);
+}
+
+.sidebar-meal-qty span {
+    font-weight: 600;
+    min-width: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+}
+
+/* Mobile fixed bottom bar */
+.mobile-fixed-bar {
+    display: none;
+}
+
+
 
 .form-step {
     display: none;
@@ -636,12 +796,23 @@ a:hover {
 
 .form-step.active {
     display: block;
-    animation: fadeIn 0.3s ease;
+    animation: slideInRight 0.4s ease;
 }
 
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }
     to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInRight {
+    from { opacity: 0; transform: translateX(20px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes popIn {
+    0% { opacity: 0; transform: scale(0.8); }
+    70% { transform: scale(1.05); }
+    100% { opacity: 1; transform: scale(1); }
 }
 
 .form-step h3 {
@@ -1181,6 +1352,64 @@ a:hover {
 
     .progress-step span {
         display: none;
+    }
+
+    /* Step 1 split -> stack on mobile */
+    .step1-split {
+        grid-template-columns: 1fr;
+    }
+
+    .step1-right {
+        display: none;
+    }
+
+    /* Show mobile fixed bar */
+    .mobile-fixed-bar {
+        display: block;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 999;
+        background: var(--color-bg);
+        border-top: 2px solid var(--color-border);
+        box-shadow: 0 -4px 20px rgba(0,0,0,0.1);
+        padding: 12px 20px;
+        animation: slideUpBar 0.3s ease;
+    }
+
+    @keyframes slideUpBar {
+        from { transform: translateY(100%); }
+        to { transform: translateY(0); }
+    }
+
+    .mobile-fixed-bar-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .mobile-fixed-bar-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .mobile-fixed-bar-count {
+        font-size: 0.85rem;
+        color: var(--color-text-muted);
+    }
+
+    .mobile-fixed-bar-price {
+        font-size: 1.2rem;
+        color: var(--color-primary);
+    }
+
+    /* Extra padding at bottom so content isn't hidden behind fixed bar */
+    .form-step.active:has(.mobile-fixed-bar) {
+        padding-bottom: 80px;
     }
 }
 
