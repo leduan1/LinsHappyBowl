@@ -1590,3 +1590,319 @@ a:hover {
         height: 140px;
     }
 }
+
+/* =========================================
+   Meal Tracker Page
+   ========================================= */
+
+.tracker-page {
+    min-height: 100vh;
+    background: var(--color-bg-light);
+}
+
+.tracker-hero {
+    background: linear-gradient(135deg, var(--color-dark) 0%, #2d2d50 50%, var(--color-secondary) 100%);
+    color: #fff;
+    padding: 48px 0 56px;
+    text-align: center;
+}
+
+.tracker-hero h1 {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    letter-spacing: -0.02em;
+}
+
+.tracker-hero p {
+    color: rgba(255, 255, 255, 0.65);
+    font-size: 1rem;
+    margin-bottom: 28px;
+}
+
+.tracker-progress {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
+    max-width: 480px;
+    margin: 0 auto;
+}
+
+.tracker-progress__bar {
+    flex: 1;
+    height: 14px;
+    background: rgba(255, 255, 255, 0.12);
+    border-radius: 7px;
+    overflow: hidden;
+}
+
+.tracker-progress__fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
+    border-radius: 7px;
+    transition: width 0.5s ease;
+}
+
+.tracker-progress__label {
+    font-size: 1.3rem;
+    font-weight: 700;
+    display: flex;
+    align-items: baseline;
+    gap: 2px;
+}
+
+.tracker-progress__count {
+    color: var(--color-primary-light);
+    font-size: 1.6rem;
+}
+
+.tracker-progress__sep {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+.tracker-progress__total {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.tracker-card {
+    background: var(--color-bg);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    margin-top: -32px;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    margin-bottom: 32px;
+}
+
+.tracker-legend {
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    padding: 20px 24px 16px;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.tracker-legend__item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.88rem;
+    color: var(--color-text-light);
+    font-weight: 500;
+}
+
+.tracker-legend__dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+}
+
+.tracker-legend__dot--lin {
+    background: var(--color-primary);
+}
+
+.tracker-legend__dot--me {
+    background: var(--color-secondary);
+}
+
+.tracker-header-row {
+    display: grid;
+    grid-template-columns: 52px 1fr 72px 72px;
+    padding: 12px 20px;
+    background: var(--color-secondary);
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.tracker-header-row .tracker-row__check {
+    text-align: center;
+}
+
+.tracker-list {
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
+.tracker-row {
+    display: grid;
+    grid-template-columns: 52px 1fr 72px 72px;
+    align-items: center;
+    padding: 0 20px;
+    border-bottom: 1px solid var(--color-border);
+    transition: background 0.2s ease;
+}
+
+.tracker-row:hover {
+    background: var(--color-bg-warm);
+}
+
+.tracker-row--done {
+    background: #f0faf4;
+}
+
+.tracker-row--done:hover {
+    background: #e4f5ec;
+}
+
+.tracker-row__num {
+    font-weight: 700;
+    color: var(--color-text-muted);
+    font-size: 0.9rem;
+    padding: 12px 0;
+}
+
+.tracker-row__name {
+    padding: 8px 12px 8px 0;
+}
+
+.tracker-row__name input {
+    width: 100%;
+    border: 1.5px solid transparent;
+    background: var(--color-bg-light);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    font-family: var(--font-body);
+    font-size: 0.92rem;
+    color: var(--color-text);
+    transition: all var(--transition);
+}
+
+.tracker-row__name input:focus {
+    outline: none;
+    border-color: var(--color-primary);
+    background: var(--color-bg);
+    box-shadow: 0 0 0 3px rgba(232, 93, 38, 0.1);
+}
+
+.tracker-row__name input::placeholder {
+    color: var(--color-text-muted);
+}
+
+.tracker-row__check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+}
+
+.tracker-checkbox {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tracker-checkbox input {
+    display: none;
+}
+
+.tracker-checkbox__box {
+    width: 32px;
+    height: 32px;
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    color: #fff;
+}
+
+.tracker-checkbox__box svg {
+    width: 18px;
+    height: 18px;
+}
+
+.tracker-checkbox__box:hover {
+    border-color: var(--color-text-muted);
+    transform: scale(1.08);
+}
+
+.tracker-checkbox--lin.checked .tracker-checkbox__box {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    box-shadow: 0 2px 8px rgba(232, 93, 38, 0.3);
+}
+
+.tracker-checkbox--me.checked .tracker-checkbox__box {
+    background: var(--color-secondary);
+    border-color: var(--color-secondary);
+    box-shadow: 0 2px 8px rgba(45, 106, 79, 0.3);
+}
+
+.tracker-footer-note {
+    text-align: center;
+    padding: 16px 0 48px;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+/* ---- Tracker dark mode ---- */
+[data-theme="dark"] .tracker-page {
+    background: var(--color-bg);
+}
+
+[data-theme="dark"] .tracker-row--done {
+    background: rgba(45, 106, 79, 0.1);
+}
+
+[data-theme="dark"] .tracker-row--done:hover {
+    background: rgba(45, 106, 79, 0.15);
+}
+
+[data-theme="dark"] .tracker-row__name input {
+    background: var(--color-bg-light);
+    color: var(--color-text);
+}
+
+/* ---- Tracker responsive ---- */
+@media (max-width: 600px) {
+    .tracker-hero {
+        padding: 32px 0 40px;
+    }
+
+    .tracker-hero h1 {
+        font-size: 1.6rem;
+    }
+
+    .tracker-header-row,
+    .tracker-row {
+        grid-template-columns: 40px 1fr 56px 56px;
+        padding: 0 12px;
+    }
+
+    .tracker-header-row {
+        padding: 10px 12px;
+        font-size: 0.72rem;
+    }
+
+    .tracker-row__name input {
+        padding: 8px 10px;
+        font-size: 0.85rem;
+    }
+
+    .tracker-checkbox__box {
+        width: 28px;
+        height: 28px;
+    }
+
+    .tracker-checkbox__box svg {
+        width: 15px;
+        height: 15px;
+    }
+
+    .tracker-legend {
+        gap: 20px;
+        padding: 16px 16px 12px;
+    }
+
+    .tracker-card {
+        border-radius: var(--radius);
+    }
+}
