@@ -1710,7 +1710,7 @@ a:hover {
 
 .tracker-header-row {
     display: grid;
-    grid-template-columns: 52px 1fr 72px 72px;
+    grid-template-columns: 52px 1fr 88px 72px 72px;
     padding: 12px 20px;
     background: var(--color-secondary);
     color: #fff;
@@ -1718,9 +1718,11 @@ a:hover {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.6px;
+    align-items: center;
 }
 
-.tracker-header-row .tracker-row__check {
+.tracker-header-row .tracker-row__check,
+.tracker-header-row .tracker-row__qty {
     text-align: center;
 }
 
@@ -1731,7 +1733,7 @@ a:hover {
 
 .tracker-row {
     display: grid;
-    grid-template-columns: 52px 1fr 72px 72px;
+    grid-template-columns: 52px 1fr 88px 72px 72px;
     align-items: center;
     padding: 0 20px;
     border-bottom: 1px solid var(--color-border);
@@ -1836,6 +1838,72 @@ a:hover {
     box-shadow: 0 2px 8px rgba(45, 106, 79, 0.3);
 }
 
+.tracker-checkbox--locked {
+    cursor: not-allowed;
+}
+
+.tracker-checkbox__box--locked {
+    background: var(--color-bg-light);
+    border-color: var(--color-border);
+    color: var(--color-text-muted);
+}
+
+.tracker-checkbox__box--locked svg {
+    width: 14px;
+    height: 14px;
+}
+
+.tracker-checkbox__box--locked:hover {
+    transform: none;
+    border-color: var(--color-border);
+}
+
+/* ---- Quantity controls ---- */
+.tracker-row__qty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 8px 0;
+}
+
+.tracker-qty-btn {
+    width: 28px;
+    height: 28px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.tracker-qty-btn:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-bg-warm);
+}
+
+.tracker-qty-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.tracker-qty-val {
+    min-width: 24px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--color-text);
+}
+
 .tracker-footer-note {
     text-align: center;
     padding: 16px 0 48px;
@@ -1873,8 +1941,19 @@ a:hover {
 
     .tracker-header-row,
     .tracker-row {
-        grid-template-columns: 40px 1fr 56px 56px;
-        padding: 0 12px;
+        grid-template-columns: 36px 1fr 72px 48px 48px;
+        padding: 0 8px;
+    }
+
+    .tracker-qty-btn {
+        width: 24px;
+        height: 24px;
+        font-size: 0.85rem;
+    }
+
+    .tracker-qty-val {
+        min-width: 18px;
+        font-size: 0.85rem;
     }
 
     .tracker-header-row {
