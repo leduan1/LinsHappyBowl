@@ -21,8 +21,10 @@ function saveData(data) {
 function getTotalConfirmed(data) {
   let count = 0;
   for (let i = 1; i <= TOTAL_MEALS; i++) {
-    const meal = data[i];
-    if (meal && meal.linCheck && meal.myCheck) count += (meal.qty || 1);
+    const row = data[i];
+    if (row && row.linCheck && row.myCheck) {
+      count += (row.meals || ['']).length;
+    }
   }
   return count;
 }
@@ -44,36 +46,47 @@ function LockIcon() {
   );
 }
 
-function MealRow({ index, meal, onChange }) {
-  const qty = meal.qty || 1;
-  const linChecked = meal.linCheck;
-  const myChecked = meal.myCheck;
+function MealRow({ index, row, onChange }) {
+  const meals = row.meals || [''];
+  const linChecked = row.linCheck;
+  const myChecked = row.myCheck;
   const bothDone = linChecked && myChecked;
-  // My checkbox is locked until Lin checks first
   const myLocked = !linChecked;
 
+  const updateMealName = (mealIdx, value) => {
+    const newMeals = [...meals];
+    newMeals[mealIdx] = value;
+    onChange(index, 'meals', newMeals);
+  };
+
+  const addMeal = () => {
+    onChange(index, 'meals', [...meals, '']);
+  };
+
+  const removeMeal = () => {
+    if (meals.length <= 1) return;
+    onChange(index, 'meals', meals.slice(0, -1));
+  };
+
   return (
-    <div className={`tracker-row ${bothDone ? 'tracker-row--done' : ''}`}>
+    <div className={`tracker-row ${bothDone ? 'tracker-row--done' : ''} ${meals.length > 1 ? 'tracker-row--multi' : ''}`}>
       <div className="tracker-row__num">{index}</div>
-      <div className="tracker-row__name">
-        <input
-          type="text"
-          placeholder="Název jídla..."
-          value={meal.name}
-          onChange={(e) => onChange(index, 'name', e.target.value)}
-        />
-      </div>
-      <div className="tracker-row__qty">
-        <button
-          className="tracker-qty-btn"
-          onClick={() => onChange(index, 'qty', Math.max(1, qty - 1))}
-          disabled={qty <= 1}
-        >−</button>
-        <span className="tracker-qty-val">{qty}</span>
-        <button
-          className="tracker-qty-btn"
-          onClick={() => onChange(index, 'qty', qty + 1)}
-        >+</button>
+      <div className="tracker-row__meals">
+        {meals.map((name, mi) => (
+          <div key={mi} className="tracker-meal-input-wrap">
+            <input
+              type="text"
+              placeholder={meals.length > 1 ? `Jídlo ${mi + 1}...` : 'Název jídla...'}
+              value={name}
+              onChange={(e) => updateMealName(mi, e.target.value)}
+            />
+          </div>
+        ))}
+        <div className="tracker-meal-actions">
+          <button className="tracker-meal-btn" onClick={addMeal} title="Přidat jídlo">+</button>
+          <button className="tracker-meal-btn" onClick={removeMeal} disabled={meals.length <= 1} title="Odebrat jídlo">−</button>
+          {meals.length > 1 && <span className="tracker-meal-count">{meals.length} jídel</span>}
+        </div>
       </div>
       <div className="tracker-row__check">
         <label className={`tracker-checkbox tracker-checkbox--lin ${linChecked ? 'checked' : ''}`}>
@@ -123,9 +136,8 @@ export default function SledovaniJidelPage() {
   const handleChange = (index, field, value) => {
     setData(prev => {
       const next = { ...prev };
-      if (!next[index]) next[index] = { name: '', qty: 1, linCheck: false, myCheck: false };
+      if (!next[index]) next[index] = { meals: [''], linCheck: false, myCheck: false };
       next[index] = { ...next[index], [field]: value };
-      // If Lin unchecks, also uncheck my confirmation
       if (field === 'linCheck' && !value) {
         next[index].myCheck = false;
       }
@@ -141,8 +153,8 @@ export default function SledovaniJidelPage() {
 
   const rows = [];
   for (let i = 1; i <= TOTAL_MEALS; i++) {
-    const meal = data[i] || { name: '', qty: 1, linCheck: false, myCheck: false };
-    rows.push(<MealRow key={i} index={i} meal={meal} onChange={handleChange} />);
+    const row = data[i] || { meals: [''], linCheck: false, myCheck: false };
+    rows.push(<MealRow key={i} index={i} row={row} onChange={handleChange} />);
   }
 
   return (
@@ -173,16 +185,15 @@ export default function SledovaniJidelPage() {
             </div>
             <div className="tracker-legend__item">
               <span className="tracker-legend__dot tracker-legend__dot--me" />
-              <span>Moje potvrzení (odemkne se po Lin)</span>
+              <span>Potvrzení od Duy (odemkne se po Lin)</span>
             </div>
           </div>
 
           <div className="tracker-header-row">
             <div className="tracker-row__num">#</div>
-            <div className="tracker-row__name">Jídlo</div>
-            <div className="tracker-row__qty">Ks</div>
+            <div className="tracker-row__meals">Jídla</div>
             <div className="tracker-row__check">Lin</div>
-            <div className="tracker-row__check">Já</div>
+            <div className="tracker-row__check">Duy</div>
           </div>
 
           <div className="tracker-list">

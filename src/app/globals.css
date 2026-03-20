@@ -1710,7 +1710,7 @@ a:hover {
 
 .tracker-header-row {
     display: grid;
-    grid-template-columns: 52px 1fr 88px 72px 72px;
+    grid-template-columns: 52px 1fr 72px 72px;
     padding: 12px 20px;
     background: var(--color-secondary);
     color: #fff;
@@ -1721,8 +1721,7 @@ a:hover {
     align-items: center;
 }
 
-.tracker-header-row .tracker-row__check,
-.tracker-header-row .tracker-row__qty {
+.tracker-header-row .tracker-row__check {
     text-align: center;
 }
 
@@ -1733,7 +1732,7 @@ a:hover {
 
 .tracker-row {
     display: grid;
-    grid-template-columns: 52px 1fr 88px 72px 72px;
+    grid-template-columns: 52px 1fr 72px 72px;
     align-items: center;
     padding: 0 20px;
     border-bottom: 1px solid var(--color-border);
@@ -1759,11 +1758,14 @@ a:hover {
     padding: 12px 0;
 }
 
-.tracker-row__name {
+.tracker-row__meals {
     padding: 8px 12px 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
 }
 
-.tracker-row__name input {
+.tracker-meal-input-wrap input {
     width: 100%;
     border: 1.5px solid transparent;
     background: var(--color-bg-light);
@@ -1775,15 +1777,68 @@ a:hover {
     transition: all var(--transition);
 }
 
-.tracker-row__name input:focus {
+.tracker-meal-input-wrap input:focus {
     outline: none;
     border-color: var(--color-primary);
     background: var(--color-bg);
     box-shadow: 0 0 0 3px rgba(232, 93, 38, 0.1);
 }
 
-.tracker-row__name input::placeholder {
+.tracker-meal-input-wrap input::placeholder {
     color: var(--color-text-muted);
+}
+
+.tracker-meal-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.tracker-meal-btn {
+    width: 26px;
+    height: 26px;
+    border: 1.5px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+    padding: 0;
+    line-height: 1;
+}
+
+.tracker-meal-btn:hover:not(:disabled) {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-bg-warm);
+}
+
+.tracker-meal-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.tracker-meal-count {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    font-weight: 500;
+}
+
+.tracker-row--multi {
+    align-items: start;
+}
+
+.tracker-row--multi .tracker-row__num {
+    padding-top: 18px;
+}
+
+.tracker-row--multi .tracker-row__check {
+    padding-top: 14px;
 }
 
 .tracker-row__check {
@@ -1858,52 +1913,6 @@ a:hover {
     border-color: var(--color-border);
 }
 
-/* ---- Quantity controls ---- */
-.tracker-row__qty {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 4px;
-    padding: 8px 0;
-}
-
-.tracker-qty-btn {
-    width: 28px;
-    height: 28px;
-    border: 1.5px solid var(--color-border);
-    border-radius: 6px;
-    background: var(--color-bg);
-    color: var(--color-text);
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-    padding: 0;
-    line-height: 1;
-}
-
-.tracker-qty-btn:hover:not(:disabled) {
-    border-color: var(--color-primary);
-    color: var(--color-primary);
-    background: var(--color-bg-warm);
-}
-
-.tracker-qty-btn:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-}
-
-.tracker-qty-val {
-    min-width: 24px;
-    text-align: center;
-    font-weight: 700;
-    font-size: 0.95rem;
-    color: var(--color-text);
-}
-
 .tracker-footer-note {
     text-align: center;
     padding: 16px 0 48px;
@@ -1924,7 +1933,7 @@ a:hover {
     background: rgba(45, 106, 79, 0.15);
 }
 
-[data-theme="dark"] .tracker-row__name input {
+[data-theme="dark"] .tracker-meal-input-wrap input {
     background: var(--color-bg-light);
     color: var(--color-text);
 }
@@ -1941,18 +1950,18 @@ a:hover {
 
     .tracker-header-row,
     .tracker-row {
-        grid-template-columns: 36px 1fr 72px 48px 48px;
+        grid-template-columns: 36px 1fr 48px 48px;
         padding: 0 8px;
     }
 
-    .tracker-qty-btn {
-        width: 24px;
-        height: 24px;
+    .tracker-meal-input-wrap input {
+        padding: 8px 10px;
         font-size: 0.85rem;
     }
 
-    .tracker-qty-val {
-        min-width: 18px;
+    .tracker-meal-btn {
+        width: 22px;
+        height: 22px;
         font-size: 0.85rem;
     }
 
