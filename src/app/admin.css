@@ -171,10 +171,31 @@
 }
 
 /* ---- CALENDAR ---- */
+.admin-calendar-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 8px;
+}
+
+.admin-calendar-scroll::-webkit-scrollbar {
+    height: 6px;
+}
+
+.admin-calendar-scroll::-webkit-scrollbar-track {
+    background: var(--color-bg-light);
+    border-radius: 3px;
+}
+
+.admin-calendar-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
 .admin-calendar {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(160px, 1fr));
     gap: 12px;
+    min-width: max-content;
 }
 
 .admin-day {
@@ -221,10 +242,10 @@
 }
 
 .admin-meal-item strong {
-    flex: 1;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    display: block;
 }
 
 .admin-meal-actions {
@@ -245,6 +266,21 @@
 
 .admin-meal-actions button:hover {
     background: rgba(0,0,0,0.08);
+}
+
+.admin-meal-item.sold-out {
+    opacity: 0.6;
+}
+
+.admin-meal-limit-badge {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    margin-top: 2px;
+}
+
+.admin-meal-item.sold-out .admin-meal-limit-badge {
+    color: #e53e3e;
 }
 
 .admin-add-meal-btn {
@@ -527,26 +563,36 @@
     color: #155724;
 }
 
-/* ---- ORDER DETAIL ---- */
+/* ---- ORDER DETAIL (ACCORDION) ---- */
 .order-item-detail {
     background: var(--color-bg);
     border-radius: var(--radius);
     box-shadow: var(--shadow-sm);
     overflow: hidden;
+    transition: box-shadow var(--transition);
+}
+
+.order-item-detail.open {
+    box-shadow: var(--shadow-md);
 }
 
 .order-detail-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 24px;
+    padding: 16px 24px;
+    cursor: pointer;
+    transition: background var(--transition);
+    user-select: none;
+}
+
+.order-detail-header:hover {
     background: var(--color-bg-light);
-    border-bottom: 1px solid var(--color-border);
 }
 
 .order-detail-header h4 {
     font-family: var(--font-heading);
-    font-size: 1.1rem;
+    font-size: 1.05rem;
     color: var(--color-dark);
     margin-bottom: 2px;
 }
@@ -558,21 +604,54 @@
 .order-detail-header-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 12px;
     flex-shrink: 0;
 }
 
 .order-detail-total {
-    font-size: 1.3rem;
+    font-size: 1.15rem;
     font-weight: 700;
     color: var(--color-primary);
 }
 
+.order-detail-toggle {
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    background: var(--color-bg-light);
+    border-radius: 50%;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+    transition: all var(--transition);
+    flex-shrink: 0;
+}
+
+.order-item-detail.open .order-detail-toggle {
+    transform: rotate(180deg);
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.order-detail-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+}
+
+.order-item-detail.open .order-detail-body {
+    max-height: 800px;
+}
+
 .order-detail-sections {
-    padding: 24px;
+    padding: 0 24px 24px;
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: 16px;
+    border-top: 1px solid var(--color-border);
+    padding-top: 20px;
 }
 
 .order-detail-section {
@@ -641,17 +720,7 @@
 }
 
 /* ---- RESPONSIVE ---- */
-@media (max-width: 1024px) {
-    .admin-calendar {
-        grid-template-columns: repeat(4, 1fr);
-    }
-}
-
 @media (max-width: 768px) {
-    .admin-calendar {
-        grid-template-columns: repeat(2, 1fr);
-    }
-
     .admin-nav-inner {
         flex-wrap: wrap;
         gap: 8px;
@@ -669,19 +738,25 @@
     .order-detail-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 12px;
+        gap: 8px;
     }
 
     .order-detail-sections {
         grid-template-columns: 1fr;
+        padding: 0 16px 16px;
+    }
+
+    .order-detail-header {
+        padding: 14px 16px;
+    }
+
+    .admin-date-nav {
+        flex-wrap: wrap;
+        gap: 12px;
     }
 }
 
 @media (max-width: 480px) {
-    .admin-calendar {
-        grid-template-columns: 1fr;
-    }
-
     .admin-tabs {
         flex-direction: column;
     }

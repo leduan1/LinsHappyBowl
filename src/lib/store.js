@@ -30,9 +30,10 @@ export function saveOrders(orders) {
 }
 
 export function getPricing() {
-  if (typeof window === 'undefined') return { defaultPrice: 149, deliveryFee: 0 };
+  if (typeof window === 'undefined') return { defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0 };
   const data = localStorage.getItem(STORAGE_KEYS.pricing);
-  return data ? JSON.parse(data) : { defaultPrice: 149, deliveryFee: 0 };
+  const parsed = data ? JSON.parse(data) : {};
+  return { defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0, ...parsed };
 }
 
 export function savePricingData(pricing) {
@@ -90,6 +91,32 @@ export function getDayNameShort(dateStr) {
 
 export function getMealsForDate(dateStr) {
   return getMeals().filter(m => m.date === dateStr).sort((a, b) => a.slot - b.slot);
+}
+
+// Returns how many units of a specific meal have been ordered across all orders for its date
+export function getOrderedQtyForMeal(mealId, dateStr) {
+  if (typeof window === 'undefined') return 0;
+  const orders = getOrders();
+  let total = 0;
+  for (const order of orders) {
+    for (const m of order.meals || []) {
+      if (m.mealId === mealId && m.date === dateStr) total += m.qty || 1;
+    }
+  }
+  return total;
+}
+
+// Returns total number of meal portions ordered for a given date across all orders
+export function getTotalOrderedForDate(dateStr) {
+  if (typeof window === 'undefined') return 0;
+  const orders = getOrders();
+  let total = 0;
+  for (const order of orders) {
+    for (const m of order.meals || []) {
+      if (m.date === dateStr) total += m.qty || 1;
+    }
+  }
+  return total;
 }
 
 export function initDemoData() {

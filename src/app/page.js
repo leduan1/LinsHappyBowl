@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
   getMeals, getMealsForDate, getOrders, saveOrders,
   initDemoData, generateId, formatDateISO, formatDateCZ,
-  getDayName,
+  getDayName, getPricing, getOrderedQtyForMeal, getTotalOrderedForDate,
 } from '@/lib/store';
 
 export default function HomePage() {
@@ -44,6 +44,27 @@ export default function HomePage() {
     }
     setAvailableDates(dates);
 
+    // Load limits
+    const pricing = getPricing();
+    setDailyOrderLimit(pricing.dailyOrderLimit || 0);
+
+    // Precompute ordered quantities
+    const allMeals = getMeals();
+    const mealQty = {};
+    for (const meal of allMeals) {
+      mealQty[meal.id] = getOrderedQtyForMeal(meal.id, meal.date);
+    }
+    setMealOrderedQty(mealQty);
+
+    const dateQty = {};
+    for (let i = 2; i <= 14; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      const dateStr = formatDateISO(date);
+      dateQty[dateStr] = getTotalOrderedForDate(dateStr);
+    }
+    setDateOrderedQty(dateQty);
+
     // Restore theme from localStorage
     const savedTheme = localStorage.getItem('lhb_theme');
     if (savedTheme) {
@@ -61,6 +82,24 @@ export default function HomePage() {
       if (next[mealId]) {
         delete next[mealId];
       } else {
+        // Check if adding 1 would exceed limits
+        const allMeals = getMeals();
+        const meal = allMeals.find(m => m.id === mealId);
+        if (meal) {
+          if (meal.dailyLimit > 0) {
+            const alreadyOrdered = mealOrderedQty[mealId] || 0;
+            if (alreadyOrdered >= meal.dailyLimit) return prev;
+          }
+          if (dailyOrderLimit > 0) {
+            const dateStr = meal.date;
+            const alreadyOrderedForDate = dateOrderedQty[dateStr] || 0;
+            const currentSelectedForDate = Object.entries(next).reduce((sum, [mid, qty]) => {
+              const m = allMeals.find(x => x.id === mid);
+              return m && m.date === dateStr ? sum + qty : sum;
+            }, 0);
+            if (alreadyOrderedForDate + currentSelectedForDate + 1 > dailyOrderLimit) return prev;
+          }
+        }
         next[mealId] = 1;
       }
       return next;
@@ -68,6 +107,26 @@ export default function HomePage() {
   };
 
   const changeMealQty = (mealId, delta) => {
+    if (delta > 0) {
+      // Check meal-level limit
+      const allMeals = getMeals();
+      const meal = allMeals.find(m => m.id === mealId);
+      if (meal && meal.dailyLimit > 0) {
+        const alreadyOrdered = mealOrderedQty[mealId] || 0;
+        const currentSelected = selectedMeals[mealId] || 0;
+        if (alreadyOrdered + currentSelected + delta > meal.dailyLimit) return;
+      }
+      // Check daily total limit
+      if (dailyOrderLimit > 0 && meal) {
+        const dateStr = meal.date;
+        const alreadyOrderedForDate = dateOrderedQty[dateStr] || 0;
+        const currentSelectedForDate = Object.entries(selectedMeals).reduce((sum, [mid, qty]) => {
+          const m = allMeals.find(x => x.id === mid);
+          return m && m.date === dateStr ? sum + qty : sum;
+        }, 0);
+        if (alreadyOrderedForDate + currentSelectedForDate + delta > dailyOrderLimit) return;
+      }
+    }
     setSelectedMeals(prev => {
       const next = { ...prev };
       const current = next[mealId] || 0;
@@ -124,6 +183,12 @@ export default function HomePage() {
     }, 50);
   };
 
+  const [dailyOrderLimit, setDailyOrderLimit] = useState(0);
+  // mealOrderedQty: { [mealId]: orderedCount }
+  const [mealOrderedQty, setMealOrderedQty] = useState({});
+  // dateOrderedQty: { [dateStr]: totalOrderedCount }
+  const [dateOrderedQty, setDateOrderedQty] = useState({});
+
   const [submitting, setSubmitting] = useState(false);
 
   const submitOrder = async () => {
@@ -138,7 +203,7 @@ export default function HomePage() {
       if (meal) {
         total += meal.price * qty;
         datesSet.add(meal.date);
-        mealsArr.push({ name: meal.name, qty, price: meal.price, date: meal.date });
+        mealsArr.push({ mealId: meal.id, name: meal.name, qty, price: meal.price, date: meal.date });
       }
     }
 
@@ -256,27 +321,53 @@ export default function HomePage() {
                           </button>
                           {isExpanded && (
                             <div className="order-meals-cards">
-                              {meals.map(meal => (
-                                <div
-                                  key={meal.id}
-                                  className={`order-meal-card ${selectedMeals[meal.id] ? 'selected' : ''}`}
-                                  onClick={() => toggleMeal(meal.id)}
-                                >
-                                  {meal.image && <img className="order-meal-img" src={meal.image} alt={meal.name} />}
-                                  <div className="order-meal-body">
-                                    <h4 className="order-meal-name">{meal.name}</h4>
-                                    <p className="order-meal-meta">{meal.weight}g {meal.allergens ? `| Alergeny: ${meal.allergens}` : ''}</p>
-                                    <div className="order-meal-footer">
-                                      <span className="order-meal-price">{meal.price} Kč</span>
-                                      <div className="order-meal-qty" onClick={(e) => e.stopPropagation()}>
-                                        <button type="button" onClick={() => changeMealQty(meal.id, -1)}>−</button>
-                                        <span>{selectedMeals[meal.id] || 0}</span>
-                                        <button type="button" onClick={() => changeMealQty(meal.id, 1)}>+</button>
+                              {meals.map(meal => {
+                                const alreadyOrdered = mealOrderedQty[meal.id] || 0;
+                                const mealLimit = meal.dailyLimit || 0;
+                                const remaining = mealLimit > 0 ? Math.max(0, mealLimit - alreadyOrdered) : null;
+                                const isMealSoldOut = mealLimit > 0 && remaining === 0;
+
+                                // Daily total limit check
+                                const dateAlreadyOrdered = dateOrderedQty[dateStr] || 0;
+                                const dateCurrentSelected = Object.entries(selectedMeals).reduce((sum, [mid, qty]) => {
+                                  const m = availableDates.flatMap(d => d.meals).find(x => x.id === mid);
+                                  return m && m.date === dateStr ? sum + qty : sum;
+                                }, 0);
+                                const dateLimitReached = dailyOrderLimit > 0 && dateAlreadyOrdered + dateCurrentSelected >= dailyOrderLimit;
+
+                                const currentQty = selectedMeals[meal.id] || 0;
+                                const canAddMore = !isMealSoldOut && !dateLimitReached &&
+                                  (mealLimit === 0 || alreadyOrdered + currentQty < mealLimit);
+
+                                return (
+                                  <div
+                                    key={meal.id}
+                                    className={`order-meal-card ${selectedMeals[meal.id] ? 'selected' : ''} ${isMealSoldOut ? 'sold-out' : ''}`}
+                                    onClick={() => !isMealSoldOut && toggleMeal(meal.id)}
+                                  >
+                                    {meal.image && <img className="order-meal-img" src={meal.image} alt={meal.name} />}
+                                    <div className="order-meal-body">
+                                      <h4 className="order-meal-name">{meal.name}</h4>
+                                      <p className="order-meal-meta">{meal.weight}g {meal.allergens ? `| Alergeny: ${meal.allergens}` : ''}</p>
+                                      <div className="order-meal-footer">
+                                        <div>
+                                          <span className="order-meal-price">{meal.price} Kč</span>
+                                          {isMealSoldOut ? (
+                                            <span className="meal-sold-out-badge">Vyprodáno</span>
+                                          ) : remaining !== null && (
+                                            <span className="meal-remaining-badge">Zbývá: {remaining} ks</span>
+                                          )}
+                                        </div>
+                                        <div className="order-meal-qty" onClick={(e) => e.stopPropagation()}>
+                                          <button type="button" onClick={() => changeMealQty(meal.id, -1)}>−</button>
+                                          <span>{currentQty}</span>
+                                          <button type="button" onClick={() => changeMealQty(meal.id, 1)} disabled={!canAddMore}>+</button>
+                                        </div>
                                       </div>
                                     </div>
                                   </div>
-                                </div>
-                              ))}
+                                );
+                              })}
                             </div>
                           )}
                         </div>

@@ -7,6 +7,7 @@ import {
   initDemoData, generateId, formatDateISO, formatDateCZ,
   getDayName, getDayNameShort, getMealsForDate,
   getImageLibrary, saveImageToLibrary, removeImageFromLibrary,
+  getTotalOrderedForDate, getOrderedQtyForMeal,
 } from '@/lib/store';
 
 export default function AdminPage() {
@@ -94,7 +95,7 @@ function Dashboard({ onLogout }) {
   const [editingMealId, setEditingMealId] = useState('');
   const [mealForm, setMealForm] = useState({
     date: '', slot: '1', name: '', description: '',
-    weight: '', price: '', allergens: '', image: '',
+    weight: '', price: '', allergens: '', image: '', dailyLimit: '',
   });
   const [imagePreview, setImagePreview] = useState('');
   const [showGallery, setShowGallery] = useState(false);
@@ -102,11 +103,11 @@ function Dashboard({ onLogout }) {
   const fileInputRef = useRef(null);
 
   // Pricing state
-  const [pricingForm, setPricingForm] = useState({ defaultPrice: 149, deliveryFee: 0 });
+  const [pricingForm, setPricingForm] = useState({ defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0 });
 
   useEffect(() => {
     const pricing = getPricing();
-    setPricingForm({ defaultPrice: pricing.defaultPrice, deliveryFee: pricing.deliveryFee });
+    setPricingForm({ defaultPrice: pricing.defaultPrice, deliveryFee: pricing.deliveryFee, dailyOrderLimit: pricing.dailyOrderLimit || 0 });
   }, []);
 
   const refresh = () => setRefreshKey(k => k + 1);
@@ -136,7 +137,7 @@ function Dashboard({ onLogout }) {
     setEditingMealId('');
     setMealForm({
       date: presetDate || '', slot: '1', name: '', description: '',
-      weight: '', price: String(pricing.defaultPrice), allergens: '', image: '',
+      weight: '', price: String(pricing.defaultPrice), allergens: '', image: '', dailyLimit: '',
     });
     setImagePreview('');
     if (fileInputRef.current) fileInputRef.current.value = '';
@@ -151,7 +152,7 @@ function Dashboard({ onLogout }) {
       date: meal.date, slot: String(meal.slot), name: meal.name,
       description: meal.description || '', weight: String(meal.weight),
       price: String(meal.price), allergens: meal.allergens || '',
-      image: meal.image || '',
+      image: meal.image || '', dailyLimit: meal.dailyLimit != null ? String(meal.dailyLimit) : '',
     });
     setImagePreview(meal.image || '');
     setModalOpen(true);
@@ -177,6 +178,7 @@ function Dashboard({ onLogout }) {
       price: parseInt(mealForm.price),
       allergens: mealForm.allergens,
       image: imageUrl,
+      dailyLimit: mealForm.dailyLimit !== '' ? parseInt(mealForm.dailyLimit) : 0,
     };
 
     const meals = getMeals();
@@ -215,12 +217,18 @@ function Dashboard({ onLogout }) {
     savePricingData({
       defaultPrice: parseInt(pricingForm.defaultPrice) || 149,
       deliveryFee: parseInt(pricingForm.deliveryFee) || 0,
+      dailyOrderLimit: parseInt(pricingForm.dailyOrderLimit) || 0,
     });
-    alert('Ceník byl uložen.');
+    alert('Nastavení bylo uloženo.');
   };
 
   // Orders
   const orders = getOrders().sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  const [openOrders, setOpenOrders] = useState({});
+
+  const toggleOrder = (orderId) => {
+    setOpenOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
+  };
 
   return (
     <>
@@ -266,26 +274,40 @@ function Dashboard({ onLogout }) {
               <button className="btn btn-outline btn-sm" onClick={() => setWeekOffset(w => w + 1)}>Další týden &rarr;</button>
             </div>
 
-            <div className="admin-calendar" key={refreshKey}>
-              {weekDates.map(dateStr => {
-                const dayMeals = allMeals.filter(m => m.date === dateStr).sort((a, b) => a.slot - b.slot);
-                return (
-                  <div className={`admin-day ${dateStr === todayStr ? 'today' : ''}`} key={dateStr}>
-                    <div className="admin-day-header">{getDayNameShort(dateStr)}</div>
-                    <div className="admin-day-date">{parseInt(dateStr.split('-')[2])}. {parseInt(dateStr.split('-')[1])}.</div>
-                    {dayMeals.map(meal => (
-                      <div className="admin-meal-item" key={meal.id}>
-                        <strong title={meal.name}>{meal.slot}. {meal.name}</strong>
-                        <div className="admin-meal-actions">
-                          <button onClick={() => editMeal(meal.id)} title="Upravit">✏️</button>
-                          <button onClick={() => deleteMeal(meal.id)} title="Smazat">🗑️</button>
-                        </div>
-                      </div>
-                    ))}
-                    <button className="admin-add-meal-btn" onClick={() => openMealModal(dateStr)}>+ Přidat jídlo</button>
-                  </div>
-                );
-              })}
+            <div className="admin-calendar-scroll">
+              <div className="admin-calendar" key={refreshKey}>
+                {weekDates.map(dateStr => {
+                  const dayMeals = allMeals.filter(m => m.date === dateStr).sort((a, b) => a.slot - b.slot);
+                  return (
+                    <div className={`admin-day ${dateStr === todayStr ? 'today' : ''}`} key={dateStr}>
+                      <div className="admin-day-header">{getDayNameShort(dateStr)}</div>
+                      <div className="admin-day-date">{parseInt(dateStr.split('-')[2])}. {parseInt(dateStr.split('-')[1])}.</div>
+                      {dayMeals.map(meal => {
+                        const orderedQty = getOrderedQtyForMeal(meal.id, dateStr);
+                        const limit = meal.dailyLimit || 0;
+                        const isSoldOut = limit > 0 && orderedQty >= limit;
+                        return (
+                          <div className={`admin-meal-item${isSoldOut ? ' sold-out' : ''}`} key={meal.id}>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <strong title={meal.name}>{meal.slot}. {meal.name}</strong>
+                              {limit > 0 && (
+                                <div className="admin-meal-limit-badge">
+                                  {isSoldOut ? 'Vyprodáno' : `${orderedQty}/${limit} ks`}
+                                </div>
+                              )}
+                            </div>
+                            <div className="admin-meal-actions">
+                              <button onClick={() => editMeal(meal.id)} title="Upravit">✏️</button>
+                              <button onClick={() => deleteMeal(meal.id)} title="Smazat">🗑️</button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <button className="admin-add-meal-btn" onClick={() => openMealModal(dateStr)}>+ Přidat jídlo</button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
         )}
@@ -294,7 +316,7 @@ function Dashboard({ onLogout }) {
         {activeTab === 'pricing' && (
           <div>
             <div className="admin-header">
-              <h2>Nastavení cen</h2>
+              <h2>Nastavení cen a limitů</h2>
             </div>
             <div className="pricing-form">
               <p className="text-muted">Ceny jsou nastaveny individuálně u každého jídla. Zde můžete nastavit výchozí ceny pro nová jídla.</p>
@@ -308,7 +330,17 @@ function Dashboard({ onLogout }) {
                   <input type="number" id="deliveryFee" value={pricingForm.deliveryFee} min="0" step="1" onChange={(e) => setPricingForm(p => ({ ...p, deliveryFee: e.target.value }))} />
                 </div>
               </div>
-              <button className="btn btn-primary" onClick={savePricing}>Uložit ceník</button>
+              <hr style={{ margin: '24px 0', border: 'none', borderTop: '1px solid var(--border)' }} />
+              <h3 style={{ marginBottom: 8 }}>Denní limity objednávek</h3>
+              <p className="text-muted" style={{ marginBottom: 16 }}>Maximální denní kapacita platí pro celý den. Limit u jednotlivého jídla nastavíte přímo při přidání/úpravě jídla. Hodnota 0 = bez omezení.</p>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="dailyOrderLimit">Max. celkový počet porcí za den</label>
+                  <input type="number" id="dailyOrderLimit" value={pricingForm.dailyOrderLimit} min="0" step="1" onChange={(e) => setPricingForm(p => ({ ...p, dailyOrderLimit: e.target.value }))} />
+                  <small className="form-help">Maximální celkový počet porcí objednatelných za jeden den (0 = neomezeno)</small>
+                </div>
+              </div>
+              <button className="btn btn-primary" onClick={savePricing}>Uložit nastavení</button>
             </div>
           </div>
         )}
@@ -332,65 +364,70 @@ function Dashboard({ onLogout }) {
                     mealsByDate[key].push(m);
                   });
                   const sortedDates = Object.keys(mealsByDate).sort();
+                  const isOpen = openOrders[order.id];
+                  const mealCount = (order.meals || []).reduce((sum, m) => sum + (m.qty || 1), 0);
 
                   return (
-                    <div className="order-item-detail" key={order.id}>
-                      <div className="order-detail-header">
+                    <div className={`order-item-detail ${isOpen ? 'open' : ''}`} key={order.id}>
+                      <div className="order-detail-header" onClick={() => toggleOrder(order.id)}>
                         <div>
                           <h4>{order.orderNumber}</h4>
-                          <span className="text-muted">{order.createdAt ? new Date(order.createdAt).toLocaleString('cs-CZ') : ''}</span>
+                          <span className="text-muted">
+                            {order.createdAt ? new Date(order.createdAt).toLocaleString('cs-CZ') : ''}
+                            {' · '}{order.customer.firstName} {order.customer.lastName}
+                            {' · '}{mealCount} {mealCount === 1 ? 'jídlo' : mealCount < 5 ? 'jídla' : 'jídel'}
+                          </span>
                         </div>
                         <div className="order-detail-header-right">
                           <span className={`order-status ${order.status}`}>{order.status === 'new' ? 'Nová' : 'Potvrzena'}</span>
                           <span className="order-detail-total">{order.total} Kč</span>
+                          <span className="order-detail-toggle">▼</span>
                         </div>
                       </div>
 
-                      <div className="order-detail-sections">
-                        {/* Objednané položky */}
-                        <div className="order-detail-section">
-                          <h5>Objednané položky</h5>
-                          {sortedDates.map(dateStr => (
-                            <div key={dateStr} className="order-detail-date-group">
-                              <div className="order-detail-date-label">
-                                {dateStr !== 'unknown' ? `${getDayName(dateStr)} – ${formatDateCZ(dateStr)}` : 'Datum neuvedeno'}
-                              </div>
-                              {mealsByDate[dateStr].map((m, i) => (
-                                <div className="order-detail-meal-row" key={i}>
-                                  <span>{m.name} <span className="text-muted">× {m.qty}</span></span>
-                                  <span className="order-detail-meal-price">{m.price * m.qty} Kč</span>
-                                </div>
-                              ))}
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Způsob platby */}
-                        <div className="order-detail-section">
-                          <h5>Způsob platby</h5>
-                          <p>{order.payment === 'cash' ? '💵 Hotově při převzetí' : '🏦 Bankovní převod'}</p>
-                        </div>
-
-                        {/* Kontaktní informace */}
-                        <div className="order-detail-section">
-                          <h5>Kontaktní informace</h5>
-                          <div className="order-detail-contact">
-                            <p><strong>{order.customer.firstName} {order.customer.lastName}</strong></p>
-                            <p>📧 {order.customer.email}</p>
-                            <p>📞 {order.customer.phone}</p>
-                            {order.customer.street && (
-                              <p>📍 {order.customer.street}, {order.customer.city} {order.customer.zip}</p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Poznámka */}
-                        {order.customer.note && (
+                      <div className="order-detail-body">
+                        <div className="order-detail-sections">
                           <div className="order-detail-section">
-                            <h5>Poznámka</h5>
-                            <p className="order-detail-note">{order.customer.note}</p>
+                            <h5>Objednané položky</h5>
+                            {sortedDates.map(dateStr => (
+                              <div key={dateStr} className="order-detail-date-group">
+                                <div className="order-detail-date-label">
+                                  {dateStr !== 'unknown' ? `${getDayName(dateStr)} – ${formatDateCZ(dateStr)}` : 'Datum neuvedeno'}
+                                </div>
+                                {mealsByDate[dateStr].map((m, i) => (
+                                  <div className="order-detail-meal-row" key={i}>
+                                    <span>{m.name} <span className="text-muted">× {m.qty}</span></span>
+                                    <span className="order-detail-meal-price">{m.price * m.qty} Kč</span>
+                                  </div>
+                                ))}
+                              </div>
+                            ))}
                           </div>
-                        )}
+
+                          <div className="order-detail-section">
+                            <h5>Způsob platby</h5>
+                            <p>{order.payment === 'cash' ? '💵 Hotově při převzetí' : '🏦 Bankovní převod'}</p>
+                          </div>
+
+                          <div className="order-detail-section">
+                            <h5>Kontaktní informace</h5>
+                            <div className="order-detail-contact">
+                              <p><strong>{order.customer.firstName} {order.customer.lastName}</strong></p>
+                              <p>📧 {order.customer.email}</p>
+                              <p>📞 {order.customer.phone}</p>
+                              {order.customer.street && (
+                                <p>📍 {order.customer.street}, {order.customer.city} {order.customer.zip}</p>
+                              )}
+                            </div>
+                          </div>
+
+                          {order.customer.note && (
+                            <div className="order-detail-section">
+                              <h5>Poznámka</h5>
+                              <p className="order-detail-note">{order.customer.note}</p>
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   );
@@ -442,6 +479,11 @@ function Dashboard({ onLogout }) {
                   <label htmlFor="mealPrice">Cena (Kč) *</label>
                   <input type="number" id="mealPrice" required min="0" placeholder="149" value={mealForm.price} onChange={(e) => setMealForm(f => ({ ...f, price: e.target.value }))} />
                 </div>
+              </div>
+              <div className="form-group">
+                <label htmlFor="mealDailyLimit">Denní limit tohoto jídla (ks)</label>
+                <input type="number" id="mealDailyLimit" min="0" placeholder="0 = neomezeno" value={mealForm.dailyLimit} onChange={(e) => setMealForm(f => ({ ...f, dailyLimit: e.target.value }))} />
+                <small className="form-help">Maximální počet porcí tohoto jídla objednatelných za den (0 = neomezeno)</small>
               </div>
               <div className="form-group">
                 <label htmlFor="mealAllergens">Alergeny</label>

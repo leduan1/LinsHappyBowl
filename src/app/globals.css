@@ -1018,6 +1018,50 @@ a:hover {
     border-color: var(--color-primary);
 }
 
+.order-meal-qty button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.order-meal-qty button:disabled:hover {
+    background: var(--color-bg);
+    color: inherit;
+    border-color: var(--color-border);
+}
+
+.meal-remaining-badge {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-primary);
+    background: color-mix(in srgb, var(--color-primary) 12%, transparent);
+    padding: 2px 7px;
+    border-radius: 20px;
+}
+
+.meal-sold-out-badge {
+    display: inline-block;
+    margin-top: 4px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    background: #e53e3e;
+    padding: 2px 7px;
+    border-radius: 20px;
+    letter-spacing: 0.02em;
+}
+
+.order-meal-card.sold-out {
+    opacity: 0.55;
+    cursor: default;
+    pointer-events: none;
+}
+
+.order-meal-card.sold-out .order-meal-qty {
+    pointer-events: none;
+}
+
 .order-meal-qty span {
     font-weight: 600;
     min-width: 24px;
