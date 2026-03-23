@@ -260,10 +260,12 @@ export default function HomePage() {
       <nav className="navbar">
         <div className="container nav-container">
           <Link href="/" className="logo">
-            <span className="logo-icon">🍜</span>
+            <span className="logo-icon">👩‍🍳</span>
             <span className="logo-text">Lin&apos;s Happy Bowl</span>
           </Link>
-          <button className="theme-toggle" aria-label="Přepnout tmavý režim" onClick={() => {
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <a href="tel:+420608050773" className="btn btn-outline btn-sm">Kontakt</a>
+            <button className="theme-toggle" aria-label="Přepnout tmavý režim" onClick={() => {
             const html = document.documentElement;
             const newTheme = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
             html.setAttribute('data-theme', newTheme);
@@ -271,6 +273,7 @@ export default function HomePage() {
           }}>
             <span className="theme-toggle-icon"></span>
           </button>
+          </div>
         </div>
       </nav>
 
@@ -532,14 +535,14 @@ export default function HomePage() {
         <div className="container">
           <div className="footer-grid">
             <div className="footer-brand">
-              <span className="logo-icon">🍜</span>
+              <span className="logo-icon">👩‍🍳</span>
               <span className="logo-text">Lin&apos;s Happy Bowl</span>
               <p>Domácí jídla připravená s láskou, každý den čerstvě pro vás.</p>
             </div>
             <div className="footer-contact">
               <h4>Kontakt</h4>
               <p>📧 info@linshappybowl.cz</p>
-              <p>📞 +420 123 456 789</p>
+              <p>📞 <a href="tel:+420608050773" style={{ color: 'inherit' }}>+420 608 050 773</a></p>
               <p>📍 Praha, Česká republika</p>
             </div>
           </div>
