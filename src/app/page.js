@@ -47,6 +47,7 @@ export default function HomePage() {
     // Load limits
     const pricing = getPricing();
     setDailyOrderLimit(pricing.dailyOrderLimit || 0);
+    setMinOrderQty(pricing.minOrderQty ?? 5);
 
     // Precompute ordered quantities
     const allMeals = getMeals();
@@ -152,7 +153,9 @@ export default function HomePage() {
 
   const validateStep = (step) => {
     if (step === 1) {
-      if (Object.keys(selectedMeals).length === 0) { alert('Prosím vyberte alespoň jedno jídlo.'); return false; }
+      const totalQty = Object.values(selectedMeals).reduce((a, b) => a + b, 0);
+      if (totalQty === 0) { alert('Prosím vyberte alespoň jedno jídlo.'); return false; }
+      if (totalQty < minOrderQty) { alert(`Minimální objednávka je ${minOrderQty} porcí. Aktuálně máte vybráno ${totalQty}.`); return false; }
       return true;
     }
     if (step === 2) {
@@ -184,6 +187,7 @@ export default function HomePage() {
   };
 
   const [dailyOrderLimit, setDailyOrderLimit] = useState(0);
+  const [minOrderQty, setMinOrderQty] = useState(5);
   // mealOrderedQty: { [mealId]: orderedCount }
   const [mealOrderedQty, setMealOrderedQty] = useState({});
   // dateOrderedQty: { [dateStr]: totalOrderedCount }
@@ -306,6 +310,17 @@ export default function HomePage() {
             <div className={`form-step ${currentStep === 1 ? 'active' : ''}`}>
               <h3>Vyberte dny a jídla</h3>
               <p className="text-muted">Můžete vybírat jídla z více dnů najednou</p>
+              {minOrderQty > 1 && (
+                <div className="min-order-notice">
+                  Minimální objednávka je <strong>{minOrderQty} porce</strong>
+                  {(() => {
+                    const total = Object.values(selectedMeals).reduce((a, b) => a + b, 0);
+                    return total > 0 && total < minOrderQty
+                      ? <span className="min-order-progress"> · vybráno {total} z {minOrderQty}</span>
+                      : null;
+                  })()}
+                </div>
+              )}
 
               <div className="step1-split">
                 <div className="step1-left">

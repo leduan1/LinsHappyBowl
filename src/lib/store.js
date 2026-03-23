@@ -30,10 +30,10 @@ export function saveOrders(orders) {
 }
 
 export function getPricing() {
-  if (typeof window === 'undefined') return { defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0 };
+  if (typeof window === 'undefined') return { defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0, minOrderQty: 5 };
   const data = localStorage.getItem(STORAGE_KEYS.pricing);
   const parsed = data ? JSON.parse(data) : {};
-  return { defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0, ...parsed };
+  return { defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0, minOrderQty: 5, ...parsed };
 }
 
 export function savePricingData(pricing) {

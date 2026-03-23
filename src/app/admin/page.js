@@ -103,11 +103,11 @@ function Dashboard({ onLogout }) {
   const fileInputRef = useRef(null);
 
   // Pricing state
-  const [pricingForm, setPricingForm] = useState({ defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0 });
+  const [pricingForm, setPricingForm] = useState({ defaultPrice: 149, deliveryFee: 0, dailyOrderLimit: 0, minOrderQty: 5 });
 
   useEffect(() => {
     const pricing = getPricing();
-    setPricingForm({ defaultPrice: pricing.defaultPrice, deliveryFee: pricing.deliveryFee, dailyOrderLimit: pricing.dailyOrderLimit || 0 });
+    setPricingForm({ defaultPrice: pricing.defaultPrice, deliveryFee: pricing.deliveryFee, dailyOrderLimit: pricing.dailyOrderLimit || 0, minOrderQty: pricing.minOrderQty ?? 5 });
   }, []);
 
   const refresh = () => setRefreshKey(k => k + 1);
@@ -218,6 +218,7 @@ function Dashboard({ onLogout }) {
       defaultPrice: parseInt(pricingForm.defaultPrice) || 149,
       deliveryFee: parseInt(pricingForm.deliveryFee) || 0,
       dailyOrderLimit: parseInt(pricingForm.dailyOrderLimit) || 0,
+      minOrderQty: parseInt(pricingForm.minOrderQty) ?? 5,
     });
     alert('Nastavení bylo uloženo.');
   };
@@ -338,6 +339,11 @@ function Dashboard({ onLogout }) {
                   <label htmlFor="dailyOrderLimit">Max. celkový počet porcí za den</label>
                   <input type="number" id="dailyOrderLimit" value={pricingForm.dailyOrderLimit} min="0" step="1" onChange={(e) => setPricingForm(p => ({ ...p, dailyOrderLimit: e.target.value }))} />
                   <small className="form-help">Maximální celkový počet porcí objednatelných za jeden den (0 = neomezeno)</small>
+                </div>
+                <div className="form-group">
+                  <label htmlFor="minOrderQty">Minimální počet porcí na objednávku</label>
+                  <input type="number" id="minOrderQty" value={pricingForm.minOrderQty} min="1" step="1" onChange={(e) => setPricingForm(p => ({ ...p, minOrderQty: e.target.value }))} />
+                  <small className="form-help">Zákazník musí objednat alespoň tento počet porcí celkem</small>
                 </div>
               </div>
               <button className="btn btn-primary" onClick={savePricing}>Uložit nastavení</button>
